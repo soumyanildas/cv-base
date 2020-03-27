@@ -1,13 +1,17 @@
 import { Controller, Post, Res, HttpStatus, Body, UseFilters } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
-import { MysqlExceptionFilter } from 'src/filters/mysql-exception.filter';
-import { LoginDto } from 'src/users/dto/login.dto';
+import { LoginDto } from '../users/dto/login.dto';
+import { MysqlExceptionFilter } from '../filters/mysql-exception.filter';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
+  @ApiOperation({
+    description: 'Register a user. User can have userType as "candidate" or "employer". If "employer" then company details is required. User signed up with facebook already are logged in the next time.'
+  })
   @Post('register')
   @UseFilters(MysqlExceptionFilter)
   async register(@Body() createUserDto: CreateUserDto, @Res() res: any) {
@@ -16,7 +20,8 @@ export class AuthController {
       if (response) {
         // delete response.password;
         return res.status(HttpStatus.OK).json({
-          error: false,
+          statusCode: 200,
+          message: 'Successfully registered user.',
           response
         });
       }
@@ -26,19 +31,24 @@ export class AuthController {
         // delete response.password;
         delete response.access_token;
         return res.status(HttpStatus.OK).json({
-          error: false,
+          statusCode: 200,
+          message: 'Successfully registered user.',
           response
         });
       }
     }
   }
 
+  @ApiOperation({
+    description: 'Login a user who have signed up via email.'
+  })
   @Post('login')
   async login(@Body() loginDto: LoginDto, @Res() res: any) {
     const response = await this.authService.login(loginDto);
     if (response) {
       return res.status(HttpStatus.OK).json({
-        error: false,
+        statusCode: 200,
+        message: 'Successfully logged in.',
         response
       });
     }
