@@ -5,6 +5,11 @@ import { UserCompany } from 'src/common/entities/userCompany.entity';
 import { UserCompanyFollow } from 'src/common/entities/userCompanyFollow.entity';
 import { UserRecommendation } from 'src/common/entities/userRecommendation.entity';
 
+export enum LicenseType {
+  standard = 'standard',
+  premium = 'premium'
+}
+
 @Entity('companies')
 export class Company {
 
@@ -64,6 +69,13 @@ export class Company {
     nullable: true
   })
   about: string;
+
+  @Column({
+    type: 'enum',
+    enum: LicenseType,
+    default: LicenseType.standard
+  })
+  licenseType: string;
 
   @Column({
     type: 'boolean',
