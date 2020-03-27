@@ -120,12 +120,6 @@ export class User {
   deviceId: string;
 
   @Column({
-    type: 'text',
-    nullable: true
-  })
-  cv: string;
-
-  @Column({
     type: 'enum',
     enum: LoginType,
     default: LoginType.email
@@ -156,16 +150,16 @@ export class User {
   })
   updatedBy: string;
 
-  @OneToMany(type => UserStrength, userStrength => userStrength.user, { cascade: true })
+  @OneToMany(type => UserStrength, userStrength => userStrength.user, { cascade: true, nullable: true })
   strengths: UserStrength[];
 
-  @OneToMany(type => UserSkill, userSkill => userSkill.user, { cascade: true })
+  @OneToMany(type => UserSkill, userSkill => userSkill.user, { cascade: true, nullable: true })
   skills: UserSkill[];
 
-  @OneToMany(type => UserJobType, userJobType => userJobType.user, { cascade: true })
+  @OneToMany(type => UserJobType, userJobType => userJobType.user, { cascade: true, nullable: true })
   jobTypes: UserJobType[];
 
-  @OneToMany(type => UserEmploymentHistory, userEmploymentHistory => userEmploymentHistory.user, { nullable: true })
+  @OneToMany(type => UserEmploymentHistory, userEmploymentHistory => userEmploymentHistory.user, { cascade: true, nullable: true })
   employmentHistories: UserEmploymentHistory[];
 
   @OneToOne(type => Company, company => company.user, { cascade: true, nullable: true })
