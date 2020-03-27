@@ -53,7 +53,7 @@ export class AuthService {
         if (userResponse.userType === 'employer' && !userResponse.company.isActive) {
           throw new HttpException('Account not activated yet. Please contact administrator.', 400);
         }
-        const payload = { email: userResponse.email, firstName: userResponse.firstName, lastName: userResponse.lastName };
+        const payload = { id: userResponse.id, email: userResponse.email, firstName: userResponse.firstName, lastName: userResponse.lastName };
         return {
           accessToken: this.jwtService.sign(payload),
           email: userResponse.email,
@@ -83,7 +83,7 @@ export class AuthService {
         }
         const isPasswordValid = await bcrypt.compare(loginDto.password, userResponse.password);
         if (isPasswordValid) {
-          const payload = { email: userResponse.email, firstName: userResponse.firstName, lastName: userResponse.lastName };
+          const payload = { id: userResponse.id, email: userResponse.email, firstName: userResponse.firstName, lastName: userResponse.lastName };
           return {
             accessToken: this.jwtService.sign(payload),
             email: userResponse.email,
