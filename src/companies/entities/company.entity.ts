@@ -66,6 +66,12 @@ export class Company {
   about: string;
 
   @Column({
+    type: 'boolean',
+    default: false
+  })
+  isActive: boolean;
+
+  @Column({
     type: 'datetime',
     nullable: true
   })
