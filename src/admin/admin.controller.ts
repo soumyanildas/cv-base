@@ -47,7 +47,7 @@ export class AdminController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Post('create/skill')
+  @Post('create/jobType')
   async createJobType(@Body() createJobType: CreateJobTypeDto, @Res() res: any, @AuthUser() user: any) {
     if (user.userType === 'admin') {
       const response = await this.adminService.createJobType(createJobType);
