@@ -43,6 +43,7 @@ export class UserController {
   }
 
   @ApiTags('config')
+  @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Get('config')
   async getConfig(@Res() res: any) {
