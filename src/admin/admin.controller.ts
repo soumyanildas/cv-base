@@ -6,6 +6,7 @@ import { AuthUser } from 'src/common/decorator/user.decorator';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { CreateJobTypeDto } from './dto/create-jobType.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('admin')
 export class AdminController {
@@ -15,6 +16,7 @@ export class AdminController {
   ) { }
 
   @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
   @Post('create/strength')
   async createStrength(@Body() createStrengthDto: CreateStrengthDto, @Res() res: any, @AuthUser() user: any) {
     if (user.userType === 'admin') {
@@ -31,6 +33,7 @@ export class AdminController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
   @Post('create/skill')
   async createSkill(@Body() createSkillDto: CreateSkillDto, @Res() res: any, @AuthUser() user: any) {
     if (user.userType === 'admin') {
@@ -47,6 +50,7 @@ export class AdminController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
   @Post('create/jobType')
   async createJobType(@Body() createJobType: CreateJobTypeDto, @Res() res: any, @AuthUser() user: any) {
     if (user.userType === 'admin') {
