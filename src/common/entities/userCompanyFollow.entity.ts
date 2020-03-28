@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, ManyToMany, JoinColumn } from 'typeorm';
-import { User } from 'src/users/entities/user.entity';
-import { Company } from 'src/companies/entities/company.entity';
+import { User } from '../../user/entities/user.entity';
+import { Company } from '../../company/entities/company.entity';
 
 @Entity()
 export class UserCompanyFollow {
