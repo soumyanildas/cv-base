@@ -7,8 +7,8 @@ import { CreateAdminDto } from './dto/create-admin.dto';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { CreateJobTypeDto } from './dto/create-jobType.dto';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UpdateCompanyDto } from './dto/update-company.dto';
+import { UpdateUserAdminDto } from './dto/update-user-admin.dto';
+import { UpdateCompanyAdminDto } from './dto/update-company-admin.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -139,9 +139,9 @@ export class AdminController {
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @Put('user/:userId')
-  async updateUser(@Body() updateUserDto: UpdateUserDto ,@Res() res: any, @AuthUser() user: any, @Param('userId') userId: string) {
+  async updateUser(@Body() updateUserAdminDto: UpdateUserAdminDto ,@Res() res: any, @AuthUser() user: any, @Param('userId') userId: string) {
     if (user.userType === 'admin') {
-      const response = await this.adminService.updateUser(updateUserDto, userId);
+      const response = await this.adminService.updateUser(updateUserAdminDto, userId);
       return res.status(HttpStatus.OK).json({
         statusCode: 200,
         response
@@ -202,9 +202,9 @@ export class AdminController {
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @Put('company/:companyId')
-  async updateCompany(@Body() updateCompanyDto: UpdateCompanyDto ,@Res() res: any, @AuthUser() user: any, @Param('companyId') companyId: string) {
+  async updateCompany(@Body() updateCompanyAdminDto: UpdateCompanyAdminDto ,@Res() res: any, @AuthUser() user: any, @Param('companyId') companyId: string) {
     if (user.userType === 'admin') {
-      const response = await this.adminService.updateCompany(updateCompanyDto, companyId);
+      const response = await this.adminService.updateCompany(updateCompanyAdminDto, companyId);
       return res.status(HttpStatus.OK).json({
         statusCode: 200,
         response

@@ -14,8 +14,8 @@ import { CreateJobTypeDto } from './dto/create-jobType.dto';
 import { CreateAdminDto } from './dto/create-admin.dto';
 
 import * as generator from 'generate-password';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UpdateCompanyDto } from './dto/update-company.dto';
+import { UpdateUserAdminDto } from './dto/update-user-admin.dto';
+import { UpdateCompanyAdminDto } from './dto/update-company-admin.dto';
 
 @Injectable()
 export class AdminService {
@@ -68,21 +68,21 @@ export class AdminService {
     return await this.companyRepository.findOne({ id })
   }
 
-  async updateUser(updateUserDto: UpdateUserDto, id: string) {
+  async updateUser(updateUserAdminDto: UpdateUserAdminDto, id: string) {
     const user = await this.userRepository.findOne({ id });
     if (!user) {
       throw new HttpException('User not found.', 404);
     }
-    const entity = Object.assign(new User(), { ...user, ...updateUserDto });
+    const entity = Object.assign(new User(), { ...user, ...updateUserAdminDto });
     return await this.userRepository.save(entity);
   }
 
-  async updateCompany(updateCompanyDto: UpdateCompanyDto, id: string) {
+  async updateCompany(updateCompanyAdminDto: UpdateCompanyAdminDto, id: string) {
     const company = await this.companyRepository.findOne({ id });
     if (!company) {
       throw new HttpException('Company not found.', 404);
     }
-    const entity = Object.assign(new Company(), { ...company, ...updateCompanyDto });
+    const entity = Object.assign(new Company(), { ...company, ...updateCompanyAdminDto });
     return await this.companyRepository.save(entity);
   }
 

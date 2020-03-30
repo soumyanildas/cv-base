@@ -1,7 +1,7 @@
 import { IsString, IsUrl, IsOptional } from 'class-validator';
-import {  ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
-export class UpdateCompanyDto {
+export class UpdateCompanyAdminDto {
 
   @ApiPropertyOptional()
   @IsString()

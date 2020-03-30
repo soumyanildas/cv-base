@@ -6,7 +6,7 @@ export enum Gender {
   female = 'female'
 }
 
-export class UpdateUserDto {
+export class UpdateUserAdminDto {
 
   @ApiPropertyOptional()
   @IsString()
