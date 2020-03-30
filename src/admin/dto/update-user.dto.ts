@@ -1,5 +1,11 @@
-import { IsString, IsNumber, IsEnum, IsOptional } from "class-validator";
-import { ApiPropertyOptional } from "@nestjs/swagger";
+import { IsString, IsNotEmpty, IsNumber, IsEnum, ValidateNested, IsUrl, IsOptional } from "class-validator";
+import { Type } from "class-transformer";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+
+import { CreateUserStrengthDto } from "./create-userStrength.dto";
+import { CreateUserSkillDto } from "./create-userSkill.dto";
+import { CreateUserJobTypeDto } from "./create-userJobType.dto";
+import { CreateUserEmploymentHistoryDto } from "./create-userEmploymentHistory.dto";
 
 export enum Gender {
   male = 'male',
@@ -8,44 +14,74 @@ export enum Gender {
 
 export class UpdateUserDto {
 
-  @ApiPropertyOptional()
+  @ApiProperty()
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   readonly firstName: string;
 
-  @ApiPropertyOptional()
+  @ApiProperty()
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   readonly lastName: string;
 
-  @ApiPropertyOptional()
-  @IsString()
-  @IsOptional()
-  readonly email: string;
-
-  @ApiPropertyOptional()
+  @ApiProperty()
   @IsNumber()
-  @IsOptional()
+  @IsNotEmpty()
   readonly mobile: number;
 
-  @ApiPropertyOptional()
+  @ApiProperty()
   @IsNumber()
-  @IsOptional()
+  @IsNotEmpty()
   readonly birthYear: number;
 
-  @ApiPropertyOptional()
+  @ApiProperty()
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   readonly city: string;
 
-  @ApiPropertyOptional({ enum: ['male', 'female'] })
+  @ApiProperty({ enum: ['male', 'female'] })
   @IsEnum(Gender)
-  @IsOptional()
+  @IsNotEmpty()
   readonly gender: Gender;
 
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
+  readonly jobStatus: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
   readonly about: string;
+
+  @ApiPropertyOptional()
+  @IsUrl()
+  @IsOptional()
+  readonly profilePicture: string;
+
+  @ApiPropertyOptional()
+  @IsUrl()
+  @IsOptional()
+  readonly cvLink: string;
+
+  @ApiPropertyOptional({ type: [CreateUserStrengthDto] })
+  @ValidateNested()
+  @Type(() => CreateUserStrengthDto)
+  readonly strengths: CreateUserStrengthDto[];
+
+  @ApiPropertyOptional({ type: [CreateUserSkillDto] })
+  @ValidateNested()
+  @Type(() => CreateUserSkillDto)
+  readonly skills: CreateUserSkillDto[];
+
+  @ApiPropertyOptional({ type: [CreateUserJobTypeDto] })
+  @ValidateNested()
+  @Type(() => CreateUserJobTypeDto)
+  readonly jobTypes: CreateUserJobTypeDto[];
+
+  @ApiPropertyOptional({ type: [CreateUserEmploymentHistoryDto] })
+  @ValidateNested()
+  @Type(() => CreateUserEmploymentHistoryDto)
+  readonly employmentHistories: CreateUserEmploymentHistoryDto[];
 
 }
