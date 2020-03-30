@@ -1,16 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Strength } from '../user/entities/strength.entity';
 import { Skill } from '../user/entities/skill.entity';
 import { JobType } from '../user/entities/jobType.entity';
 import { Admin } from './entities/admin.entity';
+import { User } from '../user/entities/user.entity';
+import { Company } from 'src/company/entities/company.entity';
+
 import { CreateStrengthDto } from './dto/create-strength.dto';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { CreateJobTypeDto } from './dto/create-jobType.dto';
 import { CreateAdminDto } from './dto/create-admin.dto';
 
 import * as generator from 'generate-password';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateCompanyDto } from './dto/update-company.dto';
 
 @Injectable()
 export class AdminService {
@@ -20,6 +25,8 @@ export class AdminService {
     @InjectRepository(Skill) private readonly skillsRepository: Repository<Skill>,
     @InjectRepository(JobType) private readonly jobTypesRepository: Repository<JobType>,
     @InjectRepository(Admin) private readonly adminRepository: Repository<Admin>,
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(Company) private readonly companyRepository: Repository<Company>,
   ) { }
 
   async createStrength(createStrengthDto: CreateStrengthDto) {
@@ -43,6 +50,40 @@ export class AdminService {
       ...adminResponse,
       password: randomPassword
     };
+  }
+
+  async viewUsers() {
+    return await this.userRepository.find();
+  }
+
+  async viewUser(id: string) {
+    return await this.userRepository.findOne({ id })
+  }
+
+  async viewCompanies() {
+    return await this.companyRepository.find();
+  }
+
+  async viewCompany(id: string) {
+    return await this.companyRepository.findOne({ id })
+  }
+
+  async updateUser(updateUserDto: UpdateUserDto, id: string) {
+    const user = await this.userRepository.findOne({ id });
+    if (!user) {
+      throw new HttpException('User not found.', 404);
+    }
+    const entity = Object.assign(new User(), { ...user, ...updateUserDto });
+    return await this.userRepository.save(entity);
+  }
+
+  async updateCompany(updateCompanyDto: UpdateCompanyDto, id: string) {
+    const company = await this.companyRepository.findOne({ id });
+    if (!company) {
+      throw new HttpException('Company not found.', 404);
+    }
+    const entity = Object.assign(new Company(), { ...company, ...updateCompanyDto });
+    return await this.companyRepository.save(entity);
   }
 
   /**

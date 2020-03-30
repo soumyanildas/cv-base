@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Body, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Post, UseGuards, Body, Res, HttpStatus, Get, Param, Put } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateStrengthDto } from './dto/create-strength.dto';
@@ -6,7 +6,9 @@ import { AuthUser } from 'src/common/decorator/user.decorator';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { CreateJobTypeDto } from './dto/create-jobType.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateCompanyDto } from './dto/update-company.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -16,6 +18,9 @@ export class AdminController {
   ) { }
 
   @ApiTags('admin')
+  @ApiOperation({
+    description: 'Create a strength'
+  })
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @Post('create/strength')
@@ -34,6 +39,9 @@ export class AdminController {
   }
 
   @ApiTags('admin')
+  @ApiOperation({
+    description: 'Create a skill'
+  })
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @Post('create/skill')
@@ -52,6 +60,9 @@ export class AdminController {
   }
 
   @ApiTags('admin')
+  @ApiOperation({
+    description: 'Create a jobType'
+  })
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @Post('create/jobType')
@@ -69,15 +80,139 @@ export class AdminController {
     });
   }
 
+  // @ApiTags('admin')
+  // @Post('create')
+  // async createAdmin(@Body() createAdminDto: CreateAdminDto, @Res() res: any) {
+  //   const response = await this.adminService.createAdmin(createAdminDto);
+  //   return res.status(HttpStatus.OK).json({
+  //     statusCode: 200,
+  //     response
+  //   });
+  // }
+
   @ApiTags('admin')
-  @Post('create')
-  async createAdmin(@Body() createAdminDto: CreateAdminDto, @Res() res: any) {
-    const response = await this.adminService.createAdmin(createAdminDto);
-    return res.status(HttpStatus.OK).json({
-      statusCode: 200,
-      response
+  @ApiOperation({
+    description: 'View all users currently present in the system'
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Get('users')
+  async viewUsers(@Res() res: any, @AuthUser() user: any) {
+    if (user.userType === 'admin') {
+      const response = await this.adminService.viewUsers();
+      return res.status(HttpStatus.OK).json({
+        statusCode: 200,
+        response
+      });
+    }
+    return res.status(HttpStatus.UNAUTHORIZED).json({
+      statusCode: 401,
+      message: 'You need to be an admin to access this route.'
     });
   }
 
+  @ApiTags('admin')
+  @ApiOperation({
+    description: 'View a particular user with his/her userId'
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Get('user/:userId')
+  async viewUser(@Res() res: any, @AuthUser() user: any, @Param('userId') userId: string) {
+    if (user.userType === 'admin') {
+      const response = await this.adminService.viewUser(userId);
+      return res.status(HttpStatus.OK).json({
+        statusCode: 200,
+        response
+      });
+    }
+    return res.status(HttpStatus.UNAUTHORIZED).json({
+      statusCode: 401,
+      message: 'You need to be an admin to access this route.'
+    });
+  }
 
+  @ApiTags('admin')
+  @ApiOperation({
+    description: 'Update an user\'s basic info'
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Put('user/:userId')
+  async updateUser(@Body() updateUserDto: UpdateUserDto ,@Res() res: any, @AuthUser() user: any, @Param('userId') userId: string) {
+    if (user.userType === 'admin') {
+      const response = await this.adminService.updateUser(updateUserDto, userId);
+      return res.status(HttpStatus.OK).json({
+        statusCode: 200,
+        response
+      });
+    }
+    return res.status(HttpStatus.UNAUTHORIZED).json({
+      statusCode: 401,
+      message: 'You need to be an admin to access this route.'
+    });
+  }
+
+  @ApiTags('admin')
+  @ApiOperation({
+    description: 'View all companies currently present in the system'
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Get('companies')
+  async viewCompanies(@Res() res: any, @AuthUser() user: any) {
+    if (user.userType === 'admin') {
+      const response = await this.adminService.viewCompanies();
+      return res.status(HttpStatus.OK).json({
+        statusCode: 200,
+        response
+      });
+    }
+    return res.status(HttpStatus.UNAUTHORIZED).json({
+      statusCode: 401,
+      message: 'You need to be an admin to access this route.'
+    });
+  }
+
+  @ApiTags('admin')
+  @ApiOperation({
+    description: 'View a particular company with their companyId'
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Get('company/:companyId')
+  async viewCompany(@Res() res: any, @AuthUser() user: any, @Param('companyId') companyId: string) {
+    if (user.userType === 'admin') {
+      const response = await this.adminService.viewCompany(companyId);
+      return res.status(HttpStatus.OK).json({
+        statusCode: 200,
+        response
+      });
+    }
+    return res.status(HttpStatus.UNAUTHORIZED).json({
+      statusCode: 401,
+      message: 'You need to be an admin to access this route.'
+    });
+  }
+
+  @ApiTags('admin')
+  @ApiOperation({
+    description: 'Update an user\'s basic info'
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Put('company/:companyId')
+  async updateCompany(@Body() updateCompanyDto: UpdateCompanyDto ,@Res() res: any, @AuthUser() user: any, @Param('companyId') companyId: string) {
+    if (user.userType === 'admin') {
+      const response = await this.adminService.updateCompany(updateCompanyDto, companyId);
+      return res.status(HttpStatus.OK).json({
+        statusCode: 200,
+        response
+      });
+    }
+    return res.status(HttpStatus.UNAUTHORIZED).json({
+      statusCode: 401,
+      message: 'You need to be an admin to access this route.'
+    });
+  }
 }
