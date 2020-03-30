@@ -31,7 +31,7 @@ export class JobListing {
   @Column({
     type: 'text',
   })
-  employementForm: string;
+  employmentForm: string;
 
   @Column({
     type: 'text',
@@ -40,22 +40,26 @@ export class JobListing {
   jobDescription: string;
 
   @Column({
-    type: 'datetime'
+    type: 'datetime',
+    nullable: true
   })
   createdAt: string;
 
   @Column({
-    type: 'text'
+    type: 'text',
+    nullable: true
   })
   createdBy: string;
 
   @Column({
-    type: 'datetime'
+    type: 'datetime',
+    nullable: true
   })
   updatedAt: string;
 
   @Column({
-    type: 'text'
+    type: 'text',
+    nullable: true
   })
   updatedBy: string;
 

@@ -113,7 +113,7 @@ export class Company {
   @ManyToMany(type => UserCompany, userCompany => userCompany.companies, { nullable: true })
   userCompany: UserCompany[];
 
-  @ManyToMany(type => UserCompanyFollow, userCompany => userCompany.companies, { nullable: true })
+  @OneToMany(type => UserCompanyFollow, userCompany => userCompany.company, { nullable: true })
   usersFollowing: UserCompanyFollow[];
 
   @OneToMany(type => UserRecommendation, userRecommendation => userRecommendation.company, { nullable: true })

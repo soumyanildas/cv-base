@@ -7,6 +7,6 @@ export class FacebookDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  access_token: string;
+  readonly access_token: string;
 
 }

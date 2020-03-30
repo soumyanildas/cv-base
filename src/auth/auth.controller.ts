@@ -12,7 +12,7 @@ export class AuthController {
 
   @ApiTags('user')
   @ApiOperation({
-    description: 'Register a user. User can have userType as "candidate" or "employer". If "employer" then company details is required. User signed up with facebook already are logged in the next time.'
+    description: 'Register a user. User can have userType as "candidate" or "employer". If "employer" then company details is required.'
   })
   @Post('user/register')
   @UseFilters(MysqlExceptionFilter)

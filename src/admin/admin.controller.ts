@@ -6,7 +6,7 @@ import { AuthUser } from 'src/common/decorator/user.decorator';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { CreateJobTypeDto } from './dto/create-jobType.dto';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @Controller('admin')
 export class AdminController {
@@ -15,6 +15,7 @@ export class AdminController {
     private readonly adminService: AdminService
   ) { }
 
+  @ApiTags('admin')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @Post('create/strength')
@@ -32,6 +33,7 @@ export class AdminController {
     });
   }
 
+  @ApiTags('admin')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @Post('create/skill')
@@ -49,6 +51,7 @@ export class AdminController {
     });
   }
 
+  @ApiTags('admin')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @Post('create/jobType')
@@ -66,6 +69,7 @@ export class AdminController {
     });
   }
 
+  @ApiTags('admin')
   @Post('create')
   async createAdmin(@Body() createAdminDto: CreateAdminDto, @Res() res: any) {
     const response = await this.adminService.createAdmin(createAdminDto);

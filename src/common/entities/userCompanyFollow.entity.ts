@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, ManyToMany, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn,  JoinColumn, ManyToOne } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Company } from '../../company/entities/company.entity';
 
@@ -8,12 +8,12 @@ export class UserCompanyFollow {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToMany(type => User, user => user.companiesFollowing)
-  @JoinColumn({ name: 'userId '})
-  users: User[];
+  @ManyToOne(type => User, user => user.companiesFollowing)
+  @JoinColumn({ name: 'userId' })
+  user: User;
 
-  @ManyToMany(type => Company, user => user.usersFollowing)
-  @JoinColumn({ name: 'companyId '})
-  companies: Company[];
+  @ManyToOne(type => Company, user => user.usersFollowing)
+  @JoinColumn({ name: 'companyId' })
+  company: Company;
 
 }

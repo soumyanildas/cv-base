@@ -8,6 +8,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({
     validationError: { target: false, value: false }
   }));
+  app.enableCors();
   app.setGlobalPrefix('api/v1');
 
   const options = new DocumentBuilder()

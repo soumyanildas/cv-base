@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, ManyToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from './user.entity';
 import { JobListing } from '../../company/entities/jobListing.entity';
 
@@ -15,28 +15,32 @@ export class UserJobInterest {
   coverLetter: string;
 
   @Column({
-    type: 'datetime'
+    type: 'datetime',
+    nullable: true
   })
   createdAt: string;
 
   @Column({
-    type: 'text'
+    type: 'text',
+    nullable: true
   })
   createdBy: string;
 
   @Column({
-    type: 'datetime'
+    type: 'datetime',
+    nullable: true
   })
   updatedAt: string;
 
   @Column({
-    type: 'text'
+    type: 'text',
+    nullable: true
   })
   updatedBy: string;
 
-  @ManyToMany(type => User, user => user.jobInterests)
+  @ManyToOne(type => User, user => user.jobInterests)
   @JoinColumn({ name: 'userId' })
-  users: User[];
+  user: User;
 
   @ManyToOne(type => JobListing, jobListing => jobListing.jobInterests)
   jobListing: JobListing;

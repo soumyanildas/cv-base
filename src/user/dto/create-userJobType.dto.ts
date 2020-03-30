@@ -6,11 +6,11 @@ export class CreateUserJobTypeDto {
   @ApiProperty({ description: 'Id of the jobType' })
   @IsString()
   @IsNotEmpty()
-  jobType: string;
+  readonly jobType: string;
 
   @ApiProperty()
   @IsNumber()
   @IsNotEmpty()
-  experience: number;
+  readonly experience: number;
 
 }

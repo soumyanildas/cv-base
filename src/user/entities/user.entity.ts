@@ -166,13 +166,13 @@ export class User {
   @OneToOne(type => Company, company => company.user, { cascade: true, nullable: true })
   company: Company;
 
-  @ManyToMany(type => UserJobInterest, userJobInterest => userJobInterest.users, { nullable: true })
+  @OneToMany(type => UserJobInterest, userJobInterest => userJobInterest.user, { nullable: true })
   jobInterests: UserJobInterest[];
 
   @ManyToOne(type => UserCompany, userCompany => userCompany.users, { nullable: true })
   userCompany: UserCompany;
 
-  @ManyToMany(type => UserCompanyFollow, userCompany => userCompany.users, { nullable: true })
+  @OneToMany(type => UserCompanyFollow, userCompany => userCompany.user, { nullable: true })
   companiesFollowing: UserCompanyFollow[];
 
   @OneToMany(type => UserRecommendation, userRecommendation => userRecommendation.user, { nullable: true })
