@@ -1,5 +1,10 @@
-import { IsString, IsUrl, IsOptional } from 'class-validator';
+import { IsString, IsUrl, IsOptional, IsBoolean, IsEnum } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+
+export enum LicenseType {
+  standard = 'standard',
+  premium = 'premium'
+}
 
 export class UpdateCompanyAdminDto {
 
@@ -37,5 +42,15 @@ export class UpdateCompanyAdminDto {
   @IsString()
   @IsOptional()
   readonly about: string;
+
+  @ApiPropertyOptional()
+  @IsBoolean()
+  @IsOptional()
+  readonly isActive: boolean;
+
+  @ApiPropertyOptional({ enum: ['standard', 'premium'] })
+  @IsEnum(LicenseType)
+  @IsOptional()
+  readonly licenseType: string;
 
 }
