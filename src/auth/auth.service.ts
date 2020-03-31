@@ -106,7 +106,7 @@ export class AuthService {
             lastName: userResponse.lastName
           };
         }
-        throw new HttpException('Credentials mismatch.', 401);
+        throw new HttpException('Credentials mismatch.', 500);
       }
       throw new HttpException('Please try logging with a social account.', 400);
     }
@@ -132,7 +132,7 @@ export class AuthService {
           lastName: userResponse.lastName
         };
       }
-      throw new HttpException('Credentials mismatch.', 401);
+      throw new HttpException('Credentials mismatch.', 500);
     }
     throw new HttpException('User not found.', 404);
   }
