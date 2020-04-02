@@ -40,6 +40,13 @@ export class JobListing {
   jobDescription: string;
 
   @Column({
+    type: 'date',
+    nullable: true
+  })
+  lastApplicationDate: string;
+
+
+  @Column({
     type: 'datetime',
     nullable: true
   })

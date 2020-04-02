@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsNumber, IsEnum, ValidateNested, IsUrl, IsOptional } from "class-validator";
+import { IsString, IsNotEmpty, IsNumber, IsEnum, ValidateNested, IsUrl, IsOptional, Min, Max } from "class-validator";
 import { Type } from "class-transformer";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
@@ -31,6 +31,8 @@ export class UpdateUserDto {
 
   @ApiProperty()
   @IsNumber()
+  @Min(1901)
+  @Max(2155)
   @IsNotEmpty()
   readonly birthYear: number;
 
@@ -44,9 +46,9 @@ export class UpdateUserDto {
   @IsNotEmpty()
   readonly gender: Gender;
 
-  @ApiPropertyOptional()
+  @ApiProperty()
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   readonly jobStatus: string;
 
   @ApiPropertyOptional()

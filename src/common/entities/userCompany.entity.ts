@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToMany, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Company } from '../../company/entities/company.entity';
 
@@ -14,12 +14,12 @@ export class UserCompany {
   })
   role: string;
 
-  @OneToMany(type => User, user => user.userCompany)
-  @JoinColumn({ name: 'userId '})
-  users: User[];
+  @ManyToOne(type => User, user => user.userCompanies)
+  @JoinColumn({ name: 'userId' })
+  user: User;
 
-  @ManyToMany(type => Company, user => user.userCompany)
-  @JoinColumn({ name: 'companyId '})
-  companies: Company[];
+  @ManyToOne(type => Company, company => company.userCompany)
+  @JoinColumn({ name: 'companyId' })
+  company: Company;
 
 }

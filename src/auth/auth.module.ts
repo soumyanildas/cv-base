@@ -7,7 +7,10 @@ import { jwtConstants } from './constants';
 import { AuthController } from './auth.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
-import { Admin } from 'src/admin/entities/admin.entity';
+import { Admin } from '../admin/entities/admin.entity';
+import { MailService } from '../services/mail/mail.service';
+import { Company } from '../company/entities/company.entity';
+import { UserCompany } from '../common/entities/userCompany.entity';
 
 @Module({
   imports: [
@@ -16,10 +19,10 @@ import { Admin } from 'src/admin/entities/admin.entity';
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '86400s' },
     }),
-    TypeOrmModule.forFeature([User, Admin])
+    TypeOrmModule.forFeature([User, Admin, Company, UserCompany])
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, MailService],
   exports: [AuthService],
 })
 export class AuthModule { }

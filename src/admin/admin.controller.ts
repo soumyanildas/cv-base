@@ -197,7 +197,7 @@ export class AdminController {
 
   @ApiTags('admin')
   @ApiOperation({
-    description: 'Update an user\'s basic info'
+    description: 'Update an company\'s basic info'
   })
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
@@ -215,4 +215,47 @@ export class AdminController {
       message: 'You need to be an admin to access this route.'
     });
   }
+
+  @ApiTags('admin')
+  @ApiOperation({
+    description: 'Get employers outside of current company'
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Get('company/:companyId/outsideEmployers')
+  async findOutsideEmployers(@Res() res: any, @AuthUser() user: any, @Param('companyId') companyId: string) {
+    if (user.userType === 'admin') {
+      const response = await this.adminService.findOutsideEmployers(companyId);
+      return res.status(HttpStatus.OK).json({
+        statusCode: 200,
+        response
+      });
+    }
+    return res.status(HttpStatus.UNAUTHORIZED).json({
+      statusCode: 401,
+      message: 'You need to be an admin to access this route.'
+    });
+  }
+
+  @ApiTags('admin')
+  @ApiOperation({
+    description: 'Assign new employers to a company'
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Get('company/:companyId/assignEmployer/:employerId')
+  async assignEmployerCompany(@Res() res: any, @AuthUser() user: any, @Param('companyId') companyId: string,  @Param('employerId') employerId: string) {
+    if (user.userType === 'admin') {
+      const response = await this.adminService.assignEmployerCompany(employerId, companyId);
+      return res.status(HttpStatus.OK).json({
+        statusCode: 200,
+        response
+      });
+    }
+    return res.status(HttpStatus.UNAUTHORIZED).json({
+      statusCode: 401,
+      message: 'You need to be an admin to access this route.'
+    });
+  }
+
 }

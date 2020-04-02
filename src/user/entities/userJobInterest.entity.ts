@@ -38,7 +38,7 @@ export class UserJobInterest {
   })
   updatedBy: string;
 
-  @ManyToOne(type => User, user => user.jobInterests)
+  @ManyToOne(type => User, user => user.jobInterests, { eager: true })
   @JoinColumn({ name: 'userId' })
   user: User;
 

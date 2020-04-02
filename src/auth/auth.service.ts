@@ -2,7 +2,7 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from '../user/dto/create-user.dto';
-import { Repository } from 'typeorm';
+import { Repository, getRepository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
 import { LoginDto } from '../user/dto/login.dto';
@@ -12,13 +12,18 @@ import * as bcrypt from 'bcrypt';
 import axios from 'axios';
 import { Admin } from 'src/admin/entities/admin.entity';
 import { FacebookDto } from 'src/user/dto/facebook.dto';
+import { MailService } from 'src/services/mail/mail.service';
+import { Company } from 'src/company/entities/company.entity';
+import { UserCompany } from 'src/common/entities/userCompany.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-    @InjectRepository(Admin) private readonly adminRepository: Repository<Admin>,
-    private readonly jwtService: JwtService
+    @InjectRepository(Company) private readonly companyRepository: Repository<Company>,
+    @InjectRepository(UserCompany) private readonly userCompanyRepository: Repository<UserCompany>,
+    private readonly jwtService: JwtService,
+    private readonly mailService: MailService
   ) { }
 
   /**
@@ -26,7 +31,7 @@ export class AuthService {
    * @param createUserDto DTO for encapsulating User
    */
   async register(createUserDto: CreateUserDto): Promise<any> {
-    let randomPassword;
+    let randomPassword, company;
     if (createUserDto.loginType !== 'facebook') {
       randomPassword = this.generateRandomPassword();
       createUserDto.password = randomPassword;
@@ -35,13 +40,27 @@ export class AuthService {
     if (user.userType === 'candidate' && user.hasOwnProperty('company')) {
       delete user.company;
     }
+    if (user.userType === 'employer') {
+      // checking if company with same name exists, if so no new company is created
+      company = await this.companyRepository.findOne({ where: { companyName: user.company.companyName } });
+      if (company) {
+        delete user.company;
+      }
+    }
     // Creating an instance of User to bind "this" for hooks
     const entity = Object.assign(new User(), user);
     const userResponse = await this.userRepository.save(entity);
-    return {
-      ...userResponse,
-      password: createUserDto.loginType !== 'facebook' ? randomPassword : null // Sending for development purpose only; Will be sent in an email later on
-    };
+    this.mailService.sendPassword(createUserDto.email, randomPassword);
+    // checking if user is an employer, then insert him into user-company table
+    if (user.userType === 'employer') {
+      const userCompany = {
+        user: userResponse,
+        company: userResponse.company
+      };
+      const entity = Object.assign(new UserCompany(), userCompany);
+      await this.userCompanyRepository.save(entity);
+    }
+    return userResponse;
   }
 
   /**
@@ -86,14 +105,15 @@ export class AuthService {
    * @param loginDto DTO for encapsulating Login details
    */
   async loginUser(loginDto: LoginDto): Promise<any> {
-    const userResponse = await this.userRepository
-      .findOne({
-        where: { email: loginDto.email },
-        relations: ['company']
-      });
+    const userResponse = await getRepository(User)
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.company', 'company')
+      .addSelect('user.password')
+      .where('user.email = :email', { email: loginDto.email })
+      .getOne()
     if (userResponse) {
       if (userResponse.loginType === 'email') {
-        if (userResponse.userType === 'employer' && !userResponse.company.isActive) {
+        if (userResponse.userType === 'employer' && !userResponse.company.isActive && !userResponse.isActive) {
           throw new HttpException('Account not activated yet. Please contact administrator.', 400);
         }
         const isPasswordValid = await bcrypt.compare(loginDto.password, userResponse.password);
@@ -119,12 +139,15 @@ export class AuthService {
    * @param loginDto DTO for encapsulating Login details
    */
   async loginAdmin(loginDto: LoginDto): Promise<any> {
-    const userResponse = await this.adminRepository
-      .findOne({ email: loginDto.email });
+    const userResponse = await getRepository(Admin)
+      .createQueryBuilder('admin')
+      .addSelect('admin.password')
+      .where('admin.email = :email', { email: loginDto.email })
+      .getOne()
     if (userResponse) {
       const isPasswordValid = await bcrypt.compare(loginDto.password, userResponse.password);
       if (isPasswordValid) {
-        const payload = { id: userResponse.id, email: userResponse.email, userType: userResponse.userType };
+        const payload = { id: userResponse.id, email: userResponse.email, userType: userResponse.userType, firstName: userResponse.firstName, lastName: userResponse.lastName };
         return {
           accessToken: this.jwtService.sign(payload),
           email: userResponse.email,

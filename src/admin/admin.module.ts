@@ -8,10 +8,11 @@ import { Skill } from '../user/entities/skill.entity';
 import { Strength } from '../user/entities/strength.entity';
 import { JobType } from '../user/entities/jobType.entity';
 import { Admin } from './entities/admin.entity';
+import { UserCompany } from 'src/common/entities/userCompany.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Company, Skill, Strength, JobType, Admin])
+    TypeOrmModule.forFeature([User, Company, Skill, Strength, JobType, Admin, UserCompany])
   ],
   providers: [AdminService],
   controllers: [AdminController]

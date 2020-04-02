@@ -1,11 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, getRepository } from 'typeorm';
 import { Company } from './entities/company.entity';
 import { JobListing } from './entities/jobListing.entity';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { CreateJobListingDto } from './dto/create-jobListing.dto';
 import { UpdateJobListingDto } from './dto/update-jobListing.dto';
+import { UpdateRecommendationDto } from './dto/update-recommendation.dto';
+import { UserRecommendation } from 'src/common/entities/userRecommendation.entity';
+import { UserJobInterest } from 'src/user/entities/userJobInterest.entity';
+import { UserCompany } from 'src/common/entities/userCompany.entity';
+import { SearchCandidateDto } from './dto/search-candidate.dto';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class CompanyService {
@@ -13,38 +19,85 @@ export class CompanyService {
   constructor(
     @InjectRepository(Company) private readonly companyRepository: Repository<Company>,
     @InjectRepository(JobListing) private readonly jobListingRepository: Repository<JobListing>,
+    @InjectRepository(UserRecommendation) private readonly userRecommendationRepository: Repository<UserRecommendation>,
+    @InjectRepository(UserJobInterest) private readonly userJobInterestRepository: Repository<UserJobInterest>,
+    @InjectRepository(UserCompany) private readonly userCompanyRepository: Repository<UserCompany>,
   ) { }
 
   /**
    * 
+   * @param userId id of the currently logged in employer
+   * @description Get a list of all the companies that the
+   * employer belongs to
+   */
+  async companyList(userId: string): Promise<any> {
+    const userCompany = await this.userCompanyRepository
+      .find({
+        where: { user: userId },
+        relations: ['company']
+      });
+    const companies = userCompany.map((data) => data.company);
+    return {
+      companies
+    };
+  }
+
+  /**
+   * 
    * @param updateCompanyDto DTO to encapuslate the update company data
-   * @param id id of the user to find his/her company
+   * @param companyId id of the company to be updated
+   * @param userId id of te employer who's currently logged in
    * @description Updates the currently logged in user's company details
    */
-  async updateCompany(updateCompanyDto: UpdateCompanyDto, id: string): Promise<any> {
-    const company = await this.companyRepository.findOne({ where: { user: id } });
+  async updateCompany(updateCompanyDto: UpdateCompanyDto, companyId: string, userId: string): Promise<any> {
+    const userCompany = await this.userCompanyRepository
+      .findOne({
+        where: { company: companyId, user: userId },
+        relations: ['company']
+      });
+    if (!userCompany) {
+      throw new HttpException('Company not found or user is not part of the company.', 404);
+    }
+    const company = userCompany.company;
     const entity = Object.assign(new Company(), { ...company, ...updateCompanyDto });
     return await this.companyRepository.save(entity);
   }
 
   /**
    * 
-   * @param id id of the user to find his/her company
+   * @param companyId id of the company to which employer belongs to
+   * @param userId id of the currently logged in employer
    * @description View the currently logged in user's company details
    */
-  async viewCompany(id: string): Promise<any> {
-    return await this.companyRepository.findOne({ where: { user: id } });
+  async viewCompany(companyId: string, userId: string): Promise<any> {
+    const userCompany = await this.userCompanyRepository
+      .findOne({
+        where: { company: companyId, user: userId },
+        relations: ['company']
+      });
+    if (!userCompany) {
+      throw new HttpException('Company not found or user is not part of the company.', 404);
+    }
+    return userCompany.company;
   }
 
   /**
    * 
    * @param createJobListingDto DTO to encapsulate the create job listing data
-   * @param id id of the user to find his/her company
+   * @param companyId id of the company to which employer belongs to
+   * @param userId id of the currently logged in employer
    * @description Create a job listing as the currently logged in user's company
    */
-  async createJobListing(createJobListingDto: CreateJobListingDto, id: string): Promise<any> {
-    const company = await this.companyRepository.findOne({ where: { user: id } });
-    createJobListingDto.company = company;
+  async createJobListing(createJobListingDto: CreateJobListingDto, companyId: string, userId: string): Promise<any> {
+    const userCompany = await this.userCompanyRepository
+      .findOne({
+        where: { company: companyId, user: userId },
+        relations: ['company']
+      });
+    if (!userCompany) {
+      throw new HttpException('Company not found or user is not part of the company.', 404);
+    }
+    createJobListingDto.company = userCompany.company;
     const entity = Object.assign(new JobListing(), createJobListingDto);
     return await this.jobListingRepository.save(entity);
   }
@@ -57,8 +110,94 @@ export class CompanyService {
    */
   async updateJobListing(updateJobListingDto: UpdateJobListingDto, id: string): Promise<any> {
     const jobListing = await this.jobListingRepository.findOne({ id });
-    const entity = Object.assign(new JobListing(), {...jobListing, ...updateJobListingDto});
+    const entity = Object.assign(new JobListing(), { ...jobListing, ...updateJobListingDto });
     return await this.jobListingRepository.save(entity);
   }
+
+  /**
+   * 
+   * @param companyId id of the company to which employer belongs to
+   * @description List of job listings of the company who's id is
+   * provided
+   */
+  async viewJobListings(companyId: string): Promise<any> {
+    return await this.jobListingRepository.find({ where: { company: companyId } });
+  }
+
+  /**
+   * 
+   * @param jobListingId id of the job listing
+   * @description Give detail of the job listing along with the candidates
+   * who showed interest in the job listing
+   */
+  async viewJobListing(jobListingId: string): Promise<any> {
+    const userJobInterest = await this.userJobInterestRepository
+      .find({
+        where: { jobListing: jobListingId },
+        relations: ['user', 'jobListing']
+      });
+    const job = userJobInterest[0].jobListing;
+    const users = userJobInterest.map((data) => data.user);
+    return {
+      job,
+      users
+    };
+  }
+
+  /**
+   * 
+   * @param userId id of the currently logged in employer
+   * @description Get a list of all the recommendations asked by candidates 
+   * for the currently logged in employer 
+   */
+  async recommendationList(userId: string): Promise<any> {
+    return await this.userRecommendationRepository
+      .find({
+        where: { recommendedBy: userId, isRecommendationGiven: false }
+      });
+  }
+
+  /**
+   * 
+   * @param updateRecommendationDto DTO to encapsulate the updateRecommendation data
+   * @param id id of the recommendation to be updated
+   * @description Currently logged in employer gives recommendation to a candidate
+   * if isRecommendationGiven is `false`
+   */
+  async giveRecommendation(updateRecommendationDto: UpdateRecommendationDto, id: string): Promise<any> {
+    const userRecommendation = await this.userRecommendationRepository.findOne({ id });
+    if (userRecommendation.isRecommendationGiven) {
+      throw new HttpException('Recommendation already given for this user', 409);
+    }
+    const recommendation: any = updateRecommendationDto;
+    recommendation.isRecommendationGiven = true;
+    const entity = Object.assign(new UserRecommendation(), { ...userRecommendation, ...recommendation });
+    return await this.userRecommendationRepository.save(entity);
+  }
+
+  /**
+   * 
+   * @param searchCandidateDto DTO to encapsulate the searchCandidate data
+   * @description Returns a list of all candidates fulfilling the criteria
+   * of the search query
+   */
+  async searchCandidate(searchCandidateDto: SearchCandidateDto): Promise<any> {
+    let queryBuilder = getRepository(User)
+      .createQueryBuilder('user')
+      .where('user.userType = :userType', { userType: 'candidate' })
+      .andWhere('user.jobTypes = :jobTypes', { jobTypes: searchCandidateDto.jobTypes })
+      .andWhere('user.jobStatus = :jobStatus', { jobStatus: searchCandidateDto.jobStatus });
+    if (searchCandidateDto.city) {
+      queryBuilder = queryBuilder
+        .andWhere('user.city = :city', { city: searchCandidateDto.city });
+    }
+    if (searchCandidateDto.candidateName) {
+      queryBuilder = queryBuilder
+        .andWhere(`CONCAT(user.firstName, ' ', user.lastName) LIKE '%${searchCandidateDto.candidateName}%'`)
+    }
+    return await queryBuilder.getMany();
+  }
+
+
 
 }

@@ -1,6 +1,6 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not, getRepository } from 'typeorm';
 import { Strength } from '../user/entities/strength.entity';
 import { Skill } from '../user/entities/skill.entity';
 import { JobType } from '../user/entities/jobType.entity';
@@ -16,6 +16,7 @@ import { CreateAdminDto } from './dto/create-admin.dto';
 import * as generator from 'generate-password';
 import { UpdateUserAdminDto } from './dto/update-user-admin.dto';
 import { UpdateCompanyAdminDto } from './dto/update-company-admin.dto';
+import { UserCompany } from 'src/common/entities/userCompany.entity';
 
 @Injectable()
 export class AdminService {
@@ -27,21 +28,37 @@ export class AdminService {
     @InjectRepository(Admin) private readonly adminRepository: Repository<Admin>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(Company) private readonly companyRepository: Repository<Company>,
+    @InjectRepository(UserCompany) private readonly userCompanyRepository: Repository<UserCompany>,
   ) { }
 
-  async createStrength(createStrengthDto: CreateStrengthDto) {
+  /**
+   * 
+   * @param createStrengthDto DTO to encapsulate the createStrength data
+   * @description Create strength
+   */
+  async createStrength(createStrengthDto: CreateStrengthDto): Promise<any> {
     return await this.strengthsRepository.save(createStrengthDto);
   }
 
-  async createSkill(createSkillDto: CreateSkillDto) {
+  /**
+   * 
+   * @param createSkillDto DTO to encapsulate the createSkill data
+   * @description Create skill
+   */
+  async createSkill(createSkillDto: CreateSkillDto): Promise<any> {
     return await this.skillsRepository.save(createSkillDto);
   }
 
-  async createJobType(createJobTypeDto: CreateJobTypeDto) {
+  /**
+   * 
+   * @param createJobTypeDto DTO to encapsulate the createJobType data
+   * @description Create a job type
+   */
+  async createJobType(createJobTypeDto: CreateJobTypeDto): Promise<any> {
     return await this.jobTypesRepository.save(createJobTypeDto);
   }
 
-  async createAdmin(createAdminDto: CreateAdminDto) {
+  async createAdmin(createAdminDto: CreateAdminDto): Promise<any> {
     const randomPassword = this.generateRandomPassword();
     createAdminDto.password = randomPassword;
     const entity = Object.assign(new Admin(), createAdminDto);
@@ -52,23 +69,45 @@ export class AdminService {
     };
   }
 
-  async viewUsers() {
+  /**
+   * @description View all users in the database
+   */
+  async viewUsers(): Promise<any> {
     return await this.userRepository.find();
   }
 
-  async viewUser(id: string) {
+  /**
+   * 
+   * @param id id of the user
+   * @description View details of a particular user
+   */
+  async viewUser(id: string): Promise<any> {
     return await this.userRepository.findOne({ id })
   }
 
-  async viewCompanies() {
+  /**
+   * View all companies in the database
+   */
+  async viewCompanies(): Promise<any> {
     return await this.companyRepository.find();
   }
 
-  async viewCompany(id: string) {
+  /**
+   * 
+   * @param id id of the company
+   * @description View details of a particular company
+   */
+  async viewCompany(id: string): Promise<any> {
     return await this.companyRepository.findOne({ id })
   }
 
-  async updateUser(updateUserAdminDto: UpdateUserAdminDto, id: string) {
+  /**
+   * 
+   * @param updateUserAdminDto DTO to encapsulate the updateUserAdmin data
+   * @param id id of the user to be updated
+   * @description Update the data of the users
+   */
+  async updateUser(updateUserAdminDto: UpdateUserAdminDto, id: string): Promise<any> {
     const user = await this.userRepository.findOne({ id });
     if (!user) {
       throw new HttpException('User not found.', 404);
@@ -77,13 +116,56 @@ export class AdminService {
     return await this.userRepository.save(entity);
   }
 
-  async updateCompany(updateCompanyAdminDto: UpdateCompanyAdminDto, id: string) {
+  /**
+   * 
+   * @param updateCompanyAdminDto DTO to encapsulate the updateCompanyAdmin data
+   * @param id id of the company to be updated
+   * @description Update te data of the company
+   */
+  async updateCompany(updateCompanyAdminDto: UpdateCompanyAdminDto, id: string): Promise<any> {
     const company = await this.companyRepository.findOne({ id });
     if (!company) {
       throw new HttpException('Company not found.', 404);
     }
     const entity = Object.assign(new Company(), { ...company, ...updateCompanyAdminDto });
     return await this.companyRepository.save(entity);
+  }
+
+  /**
+   * 
+   * @param companyId id of the company
+   * @description Finding employers who are not part of the company who's
+   * id has been sent
+   */
+  async findOutsideEmployers(companyId: string): Promise<any> {
+    const userCompany = await getRepository(UserCompany)
+      .createQueryBuilder('userCompany')
+      .select('userCompany.user', 'id')
+      .where('userCompany.company = :companyId', { companyId });
+    const users = await getRepository(User)
+      .createQueryBuilder('user')
+      .where('user.id NOT IN (' + userCompany.getQuery() + ')')
+      .andWhere('user.userType = :userType', { userType: 'employer' })
+      .setParameters(userCompany.getParameters())
+      .getMany();
+    return users;
+  }
+
+  /**
+   * 
+   * @param employerId id of the employer who is to be assigned to a company
+   * @param companyId id of the company to which the employer is to be assigned
+   * @description Assign an employer to the company
+   */
+  async assignEmployerCompany(employerId: string, companyId: string): Promise<any> {
+    const employer = await this.userRepository.findOne({ where: { id: employerId } });
+    const company = await this.companyRepository.findOne({ where: { id: companyId } });
+    const userCompany = {
+      user: employer,
+      company
+    };
+    const entity = Object.assign(new UserCompany(), userCompany);
+    await this.userCompanyRepository.save(entity)
   }
 
   /**

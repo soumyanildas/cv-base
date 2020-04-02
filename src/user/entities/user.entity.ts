@@ -10,6 +10,7 @@ import { UserCompanyFollow } from '../../common/entities/userCompanyFollow.entit
 import { UserRecommendation } from '../../common/entities/userRecommendation.entity';
 
 import * as bcrypt from 'bcrypt';
+import { Exclude } from 'class-transformer';
 
 export enum Gender {
   male = 'male',
@@ -54,6 +55,7 @@ export class User {
 
   @Column({
     type: 'text',
+    select: false,
     nullable: true
   })
   password: string;
@@ -128,6 +130,12 @@ export class User {
   loginType: string;
 
   @Column({
+    type: 'boolean',
+    nullable: true
+  })
+  isActive: boolean;
+
+  @Column({
     type: 'text',
     nullable: true
   })
@@ -169,8 +177,8 @@ export class User {
   @OneToMany(type => UserJobInterest, userJobInterest => userJobInterest.user, { nullable: true })
   jobInterests: UserJobInterest[];
 
-  @ManyToOne(type => UserCompany, userCompany => userCompany.users, { nullable: true })
-  userCompany: UserCompany;
+  @OneToMany(type => UserCompany, userCompany => userCompany.user, { nullable: true })
+  userCompanies: UserCompany[];
 
   @OneToMany(type => UserCompanyFollow, userCompany => userCompany.user, { nullable: true })
   companiesFollowing: UserCompanyFollow[];
@@ -184,9 +192,14 @@ export class User {
   /** Hashing password before inserting into table */
   @BeforeInsert()
   async hashPassword() {
+    console.log('===========', this.id);
     if (this.loginType !== 'facebook') {
       const salt = await bcrypt.genSalt(10);
       this.password = await bcrypt.hash(this.password, salt);
+    }
+    this.isActive = true;
+    if (this.userType === 'employer') {
+      this.isActive = false;
     }
   }
 
@@ -200,10 +213,12 @@ export class User {
 
     /** Updating company details if user is of type employer */
     if (this.userType === 'employer') {
-      this.company.createdAt = timestamp;
-      this.company.updatedAt = timestamp;
-      this.company.createdBy = this.id;
-      this.company.updatedBy = this.id;
+      if (this.company) {
+        this.company.createdAt = timestamp;
+        this.company.updatedAt = timestamp;
+        this.company.createdBy = this.id;
+        this.company.updatedBy = this.id;
+      }
     }
   }
 

@@ -10,7 +10,7 @@ import { FacebookDto } from 'src/user/dto/facebook.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
-  @ApiTags('user')
+  @ApiTags('auth')
   @ApiOperation({
     description: 'Register a user. User can have userType as "candidate" or "employer". If "employer" then company details is required.'
   })
@@ -18,8 +18,8 @@ export class AuthController {
   @UseFilters(MysqlExceptionFilter)
   async register(@Body() createUserDto: CreateUserDto, @Res() res: any) {
     const response = await this.authService.register(createUserDto);
+    delete response.password;
     if (response) {
-      // delete response.password;
       return res.status(HttpStatus.OK).json({
         statusCode: 200,
         response
@@ -27,7 +27,7 @@ export class AuthController {
     }
   }
 
-  @ApiTags('user')
+  @ApiTags('auth')
   @ApiOperation({
     description: 'Get email against facebook access token or login user if account already exists in the system'
   })
@@ -43,7 +43,7 @@ export class AuthController {
     }
   }
 
-  @ApiTags('user')
+  @ApiTags('auth')
   @ApiOperation({
     description: 'Login as a user who have signed up via email.'
   })
@@ -58,7 +58,7 @@ export class AuthController {
     }
   }
 
-  @ApiTags('admin')
+  @ApiTags('auth')
   @ApiOperation({
     description: 'Login as an administrator.'
   })

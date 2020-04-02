@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional } from "class-validator";
+import { IsString, IsNotEmpty, IsOptional, IsISO8601 } from "class-validator";
 import { UpdateCompanyDto } from "./update-company.dto";
 import { ApiPropertyOptional, ApiProperty } from "@nestjs/swagger";
 
@@ -28,6 +28,10 @@ export class CreateJobListingDto {
   @IsString()
   @IsOptional()
   readonly jobDescription: string;
+
+  @ApiProperty()
+  @IsISO8601()
+  readonly lastApplicationDate: string;
 
   company: UpdateCompanyDto;
 
