@@ -34,30 +34,6 @@ export class UserEmploymentHistory {
   })
   companyName: string;
 
-  @Column({
-    type: 'datetime',
-    nullable: true
-  })
-  createdAt: string;
-
-  @Column({
-    type: 'text',
-    nullable: true
-  })
-  createdBy: string;
-
-  @Column({
-    type: 'datetime',
-    nullable: true
-  })
-  updatedAt: string;
-
-  @Column({
-    type: 'text',
-    nullable: true
-  })
-  updatedBy: string;
-
   @ManyToOne(type => User, user => user.employmentHistories)
   user: User;
 

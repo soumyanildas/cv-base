@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, OneToOne, ManyToMany, ManyToOne, BeforeInsert, AfterInsert } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, OneToOne, BeforeInsert, PrimaryColumn } from 'typeorm';
 import { UserSkill } from './userSkill.entity';
 import { UserJobType } from './userJobType.entity';
 import { UserStrength } from './userStrength.entity';
@@ -10,7 +10,7 @@ import { UserCompanyFollow } from '../../common/entities/userCompanyFollow.entit
 import { UserRecommendation } from '../../common/entities/userRecommendation.entity';
 
 import * as bcrypt from 'bcrypt';
-import { Exclude } from 'class-transformer';
+import { v4 as uuid4 } from 'uuid';
 
 export enum Gender {
   male = 'male',
@@ -31,7 +31,7 @@ export enum LoginType {
 @Entity('users')
 export class User {
 
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn()
   id: string;
 
   @Column({
@@ -191,28 +191,24 @@ export class User {
 
   /** Hashing password before inserting into table */
   @BeforeInsert()
-  async hashPassword() {
-    console.log('===========', this.id);
-    if (this.loginType !== 'facebook') {
-      const salt = await bcrypt.genSalt(10);
-      this.password = await bcrypt.hash(this.password, salt);
-    }
-    this.isActive = true;
-    if (this.userType === 'employer') {
-      this.isActive = false;
-    }
-  }
+  async beforeInsert() {
 
-  @AfterInsert()
-  async afterInsert() {
+    this.id = uuid4();
     const timestamp = new Date().toISOString();
+
     this.createdAt = timestamp;
     this.updatedAt = timestamp;
     this.createdBy = this.id;
     this.updatedBy = this.id;
+    this.isActive = true;
 
-    /** Updating company details if user is of type employer */
+    if (this.loginType !== 'facebook') {
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
+    }
+
     if (this.userType === 'employer') {
+      this.isActive = false;
       if (this.company) {
         this.company.createdAt = timestamp;
         this.company.updatedAt = timestamp;

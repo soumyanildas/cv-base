@@ -9,7 +9,7 @@ import { UpdateJobListingDto } from './dto/update-jobListing.dto';
 import { UpdateRecommendationDto } from './dto/update-recommendation.dto';
 import { SearchCandidateDto } from './dto/search-candidate.dto';
 
-@Controller()
+@Controller('api/v1')
 export class CompanyController {
 
   constructor(
@@ -108,7 +108,7 @@ export class CompanyController {
   @Put('company/jobListing/:jobListingId/update')
   async updateJobListing(@Body() updateJobListingDto: UpdateJobListingDto, @Res() res: any, @AuthUser() user: any, @Param('jobListingId') jobListingId: string) {
     if (user.userType === 'employer') {
-      const response = await this.companyService.updateJobListing(updateJobListingDto, jobListingId)
+      const response = await this.companyService.updateJobListing(updateJobListingDto, jobListingId, user.id)
       return res.status(HttpStatus.OK).json({
         statusCode: 200,
         response
@@ -192,7 +192,7 @@ export class CompanyController {
   @Put('company/giveRecommendation/:recommendationId')
   async giveRecommendation(@Body() updateRecommendationDto: UpdateRecommendationDto, @Res() res: any, @AuthUser() user: any, @Param('recommendationId') recommendationId: string) {
     if (user.userType === 'employer') {
-      const response = await this.companyService.giveRecommendation(updateRecommendationDto, recommendationId)
+      const response = await this.companyService.giveRecommendation(updateRecommendationDto, recommendationId, user.id)
       return res.status(HttpStatus.OK).json({
         statusCode: 200,
         response
@@ -217,6 +217,26 @@ export class CompanyController {
       return res.status(HttpStatus.OK).json({
         statusCode: 200,
         response
+      });
+    }
+    return res.status(HttpStatus.UNAUTHORIZED).json({
+      statusCode: 401,
+      message: 'You need to be an employer to access this route.'
+    });
+  }
+  @ApiTags('company')
+  @ApiBearerAuth()
+  @ApiOperation({
+    description: 'Get a company\'s stats'
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @Get('company/:companyId/stats')
+  async getStats(@Res() res: any, @AuthUser() user: any, @Param('companyId') companyId: string) {
+    if (user.userType === 'employer') {
+      const userResponse = await this.companyService.getStats(companyId);
+      return res.status(HttpStatus.OK).json({
+        statusCode: 200,
+        userResponse
       });
     }
     return res.status(HttpStatus.UNAUTHORIZED).json({

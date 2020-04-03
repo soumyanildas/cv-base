@@ -1,4 +1,4 @@
-import { Injectable, HttpException } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, getRepository } from 'typeorm';
 import { Strength } from '../user/entities/strength.entity';
@@ -6,7 +6,7 @@ import { Skill } from '../user/entities/skill.entity';
 import { JobType } from '../user/entities/jobType.entity';
 import { Admin } from './entities/admin.entity';
 import { User } from '../user/entities/user.entity';
-import { Company } from 'src/company/entities/company.entity';
+import { Company } from '../company/entities/company.entity';
 
 import { CreateStrengthDto } from './dto/create-strength.dto';
 import { CreateSkillDto } from './dto/create-skill.dto';
@@ -16,7 +16,12 @@ import { CreateAdminDto } from './dto/create-admin.dto';
 import * as generator from 'generate-password';
 import { UpdateUserAdminDto } from './dto/update-user-admin.dto';
 import { UpdateCompanyAdminDto } from './dto/update-company-admin.dto';
-import { UserCompany } from 'src/common/entities/userCompany.entity';
+import { UserCompany } from '../common/entities/userCompany.entity';
+
+import * as bcrypt from 'bcrypt';
+import { MailService } from '../services/mail/mail.service';
+import { JwtService } from '@nestjs/jwt';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
 @Injectable()
 export class AdminService {
@@ -29,6 +34,8 @@ export class AdminService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(Company) private readonly companyRepository: Repository<Company>,
     @InjectRepository(UserCompany) private readonly userCompanyRepository: Repository<UserCompany>,
+    private readonly mailService: MailService,
+    private readonly jwtService: JwtService
   ) { }
 
   /**
@@ -107,11 +114,13 @@ export class AdminService {
    * @param id id of the user to be updated
    * @description Update the data of the users
    */
-  async updateUser(updateUserAdminDto: UpdateUserAdminDto, id: string): Promise<any> {
+  async updateUser(updateUserAdminDto: UpdateUserAdminDto, id: string, adminId: string): Promise<any> {
     const user = await this.userRepository.findOne({ id });
     if (!user) {
-      throw new HttpException('User not found.', 404);
+      throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
     }
+    user.updatedAt = new Date().toISOString();
+    user.updatedBy = adminId;
     const entity = Object.assign(new User(), { ...user, ...updateUserAdminDto });
     return await this.userRepository.save(entity);
   }
@@ -122,11 +131,13 @@ export class AdminService {
    * @param id id of the company to be updated
    * @description Update te data of the company
    */
-  async updateCompany(updateCompanyAdminDto: UpdateCompanyAdminDto, id: string): Promise<any> {
+  async updateCompany(updateCompanyAdminDto: UpdateCompanyAdminDto, id: string, adminId: string): Promise<any> {
     const company = await this.companyRepository.findOne({ id });
     if (!company) {
-      throw new HttpException('Company not found.', 404);
+      throw new HttpException('Company not found.', HttpStatus.NOT_FOUND);
     }
+    company.updatedAt = new Date().toISOString();
+    company.updatedBy = adminId;
     const entity = Object.assign(new Company(), { ...company, ...updateCompanyAdminDto });
     return await this.companyRepository.save(entity);
   }
@@ -166,6 +177,14 @@ export class AdminService {
     };
     const entity = Object.assign(new UserCompany(), userCompany);
     await this.userCompanyRepository.save(entity)
+  }
+
+  async resetPassword(password: string, id: string): Promise<any> {
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
+    const user = await this.adminRepository.findOne({ id });
+    user.password = hashPassword;
+    return await this.adminRepository.save(user);
   }
 
   /**

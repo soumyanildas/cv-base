@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsISO8601 } from "class-validator";
+import { IsString, IsNotEmpty, IsOptional, IsISO8601, MinDate } from "class-validator";
 import { UpdateCompanyDto } from "./update-company.dto";
 import { ApiPropertyOptional, ApiProperty } from "@nestjs/swagger";
 
@@ -31,6 +31,7 @@ export class CreateJobListingDto {
 
   @ApiProperty()
   @IsISO8601()
+  @MinDate(new Date(), { message: `minimal allowed date for lastApplicationDate is ${new Date().toISOString().split('T')[0]}`})
   readonly lastApplicationDate: string;
 
   company: UpdateCompanyDto;

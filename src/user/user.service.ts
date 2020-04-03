@@ -1,4 +1,4 @@
-import { Injectable, HttpException } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, getConnection, getRepository, Brackets } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -18,6 +18,7 @@ import { CreateUserJobInterestDto } from './dto/create-userJobInterest.dto';
 import { UserCompany } from 'src/common/entities/userCompany.entity';
 import { UserRecommendation } from 'src/common/entities/userRecommendation.entity';
 import { SearchJobDto } from './dto/search-job.dto';
+import { AddDeviceDto } from './dto/add-device.dto';
 
 @Injectable()
 export class UserService {
@@ -42,7 +43,7 @@ export class UserService {
    * @description Update the basic info of the user and his/her strengths, skills, jobTypes and employmentHistories
    */
   async updateUser(updateUserDto: UpdateUserDto, id: string): Promise<any> {
-    const user: any = await this.userRepository.findOne({ id });
+    const user = await this.userRepository.findOne({ id });
     // delete from userStrength table before new insert
     await getConnection()
       .createQueryBuilder()
@@ -64,7 +65,10 @@ export class UserService {
       .from(UserJobType)
       .where('userId = :id', { id })
       .execute()
-    return await this.userRepository.save({ ...user, ...updateUserDto });
+    user.updatedAt = new Date().toISOString();
+    user.updatedBy = user.id;
+    const entity = Object.assign(new User(), { ...user, ...updateUserDto })
+    return await this.userRepository.save(entity);
   }
 
   /**
@@ -87,12 +91,12 @@ export class UserService {
    * @param jobListingId id of the interested job listing
    */
   async createUserJobInterest(createUserJobInterestDto: CreateUserJobInterestDto, userId: string, jobListingId: string): Promise<any> {
-    const isInterested = this.userJobInterestRepository
+    const isInterested = await this.userJobInterestRepository
       .findOne({
         where: { user: userId, jobListing: jobListingId }
       });
     if (isInterested) {
-      throw new HttpException('User already showed interest in this job', 403);
+      throw new HttpException('User already showed interest in this job', HttpStatus.CONFLICT);
     }
     const user = await this.userRepository
       .findOne({
@@ -120,7 +124,7 @@ export class UserService {
         where: { user: userId, company: companyId }
       });
     if (isUserFollowing) {
-      throw new HttpException('User already follows this company', 403)
+      throw new HttpException('User already follows this company', HttpStatus.CONFLICT)
     }
     const user = await this.userRepository
       .findOne({
@@ -162,7 +166,7 @@ export class UserService {
         where: { user: userId, recommendedBy: employerId, company: companyId },
       });
     if (isUserRecommended) {
-      throw new HttpException('User already asked for recommendation from this company and employer', 403);
+      throw new HttpException('User already asked for recommendation from this company and employer', HttpStatus.CONFLICT);
     }
     const userCompany = await this.userCompanyRepository
       .findOne({
@@ -170,7 +174,7 @@ export class UserService {
         relations: ['user']
       });
     if (!userCompany) {
-      throw new HttpException('Employer doesn\'t belong to that company', 404)
+      throw new HttpException('Employer doesn\'t belong to that company', HttpStatus.NOT_FOUND)
     }
     const employer = userCompany.user;
     const company = await this.companyRepository
@@ -180,7 +184,11 @@ export class UserService {
     const userRecommendation = {
       user,
       recommendedBy: employer,
-      company
+      company,
+      createdAt: new Date().toISOString(),
+      createdBy: user.id,
+      updatedAt: new Date().toISOString(),
+      updatedBy: user.id
     };
     const entity = Object.assign(new UserRecommendation(), userRecommendation);
     return await this.userRecommendationRepository.save(entity);
@@ -227,7 +235,27 @@ export class UserService {
             .orWhere(`jobListing.jobName LIKE '%${searchJobDto.searchQuery}%'`)
         }))
     }
+    queryBuilder = queryBuilder
+      .andWhere('jobListing.lastApplicationDate >= CURDATE()')
+      .orderBy('jobListing.lastApplicationDate', 'ASC')
     return await queryBuilder.getMany();
+  }
+
+  /**
+   * 
+   * @param id id of the currently logged in user
+   * @description Get the count of the company user is following, job user is interested
+   * in and recommendations user received
+   */
+  async getStats(id: string): Promise<any> {
+    const companiesFollowing = await this.userCompanyFollowRepository.count({ where: { user: id } });
+    const jobsInterested = await this.userJobInterestRepository.count({ where: { user: id } });
+    const recommendationsReceived = await this.userRecommendationRepository.count({ where: { user: id, isRecommendationGiven: true } });
+    return {
+      companiesFollowing,
+      jobsInterested,
+      recommendationsReceived
+    };
   }
 
   /**
@@ -243,6 +271,31 @@ export class UserService {
       skills,
       jobTypes
     };
+  }
+
+  /**
+   * 
+   * @param addDeviceDto DTO to encapsulate addDevice data
+   * @param id id of the currently logged in user
+   * @description Add deviceId for the user for push notification
+   * future
+   */
+  async addDevice(addDeviceDto: AddDeviceDto, id: string): Promise<any> {
+    const user = await this.userRepository.findOne({ id });
+    const entity = Object.assign(new User(), { ...user, ...addDeviceDto });
+    return await this.userRepository.save(entity);
+  }
+
+  /**
+   * 
+   * @param id id of the currently logged in user
+   * @description Remove deviceId for the user when user logs out
+   */
+  async removeDevice(id: string): Promise<any> {
+    const user = await this.userRepository.findOne({ id });
+    user.deviceId = null;
+    const entity = Object.assign(new User(), user);
+    return await this.userRepository.save(entity);
   }
 
 }

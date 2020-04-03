@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, BeforeInsert } from 'typeorm';
 import { User } from './user.entity';
 import { JobListing } from '../../company/entities/jobListing.entity';
 
@@ -13,30 +13,6 @@ export class UserJobInterest {
     nullable: true
   })
   coverLetter: string;
-
-  @Column({
-    type: 'datetime',
-    nullable: true
-  })
-  createdAt: string;
-
-  @Column({
-    type: 'text',
-    nullable: true
-  })
-  createdBy: string;
-
-  @Column({
-    type: 'datetime',
-    nullable: true
-  })
-  updatedAt: string;
-
-  @Column({
-    type: 'text',
-    nullable: true
-  })
-  updatedBy: string;
 
   @ManyToOne(type => User, user => user.jobInterests, { eager: true })
   @JoinColumn({ name: 'userId' })

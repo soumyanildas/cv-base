@@ -1,5 +1,5 @@
-import { IsString, IsUrl, IsOptional, IsBoolean, IsEnum } from 'class-validator';
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsUrl, IsOptional, IsBoolean, IsEnum, IsNotEmpty } from 'class-validator';
+import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
 
 export enum LicenseType {
   standard = 'standard',
@@ -8,9 +8,9 @@ export enum LicenseType {
 
 export class UpdateCompanyAdminDto {
 
-  @ApiPropertyOptional()
+  @ApiProperty()
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   readonly companyName: string;
 
   @ApiPropertyOptional()

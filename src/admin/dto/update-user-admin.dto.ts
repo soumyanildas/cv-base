@@ -1,5 +1,5 @@
-import { IsString, IsNumber, IsEnum, IsOptional, IsBoolean, MinDate, Min, Max } from "class-validator";
-import { ApiPropertyOptional } from "@nestjs/swagger";
+import { IsString, IsNumber, IsEnum, IsOptional, IsBoolean, MinDate, Min, Max, IsNotEmpty } from "class-validator";
+import { ApiPropertyOptional, ApiProperty } from "@nestjs/swagger";
 
 export enum Gender {
   male = 'male',
@@ -18,9 +18,9 @@ export class UpdateUserAdminDto {
   @IsOptional()
   readonly lastName: string;
 
-  @ApiPropertyOptional()
+  @ApiProperty()
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   readonly email: string;
 
   @ApiPropertyOptional()

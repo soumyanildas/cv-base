@@ -8,6 +8,8 @@ import { CompanyModule } from './company/company.module';
 import { AdminModule } from './admin/admin.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { FileUploadModule } from './file-upload/file-upload.module';
+import { JwtModule } from '@nestjs/jwt';
+import { jwtConstants } from './auth/constants';
 
 @Module({
   imports: [
@@ -20,6 +22,10 @@ import { FileUploadModule } from './file-upload/file-upload.module';
       transport: 'smtps://user@domain.com:pass@smtp.domain.com',
     }),
     FileUploadModule,
+    JwtModule.register({
+      secret: jwtConstants.secret,
+      signOptions: { expiresIn: '86400s' },
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

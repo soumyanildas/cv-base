@@ -1,5 +1,5 @@
 
-import { Injectable, HttpException } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { Repository, getRepository } from 'typeorm';
@@ -15,6 +15,7 @@ import { FacebookDto } from 'src/user/dto/facebook.dto';
 import { MailService } from 'src/services/mail/mail.service';
 import { Company } from 'src/company/entities/company.entity';
 import { UserCompany } from 'src/common/entities/userCompany.entity';
+import { ForgotPasswordDto } from 'src/company/dto/forgot-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +23,7 @@ export class AuthService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(Company) private readonly companyRepository: Repository<Company>,
     @InjectRepository(UserCompany) private readonly userCompanyRepository: Repository<UserCompany>,
+    @InjectRepository(Admin) private readonly adminRepository: Repository<Admin>,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService
   ) { }
@@ -80,7 +82,7 @@ export class AuthService {
       // If user exists then generate jwt token and send a response back with the jwt token
       if (userResponse) {
         if (userResponse.userType === 'employer' && !userResponse.company.isActive) {
-          throw new HttpException('Account not activated yet. Please contact administrator.', 400);
+          throw new HttpException('Account not activated yet. Please contact administrator.', HttpStatus.BAD_REQUEST);
         }
         const payload = { id: userResponse.id, email: userResponse.email, userType: userResponse.userType };
         return {
@@ -114,7 +116,7 @@ export class AuthService {
     if (userResponse) {
       if (userResponse.loginType === 'email') {
         if (userResponse.userType === 'employer' && !userResponse.company.isActive && !userResponse.isActive) {
-          throw new HttpException('Account not activated yet. Please contact administrator.', 400);
+          throw new HttpException('Account not activated yet. Please contact administrator.', HttpStatus.BAD_REQUEST);
         }
         const isPasswordValid = await bcrypt.compare(loginDto.password, userResponse.password);
         if (isPasswordValid) {
@@ -126,11 +128,11 @@ export class AuthService {
             lastName: userResponse.lastName
           };
         }
-        throw new HttpException('Credentials mismatch.', 500);
+        throw new HttpException('Credentials mismatch.', HttpStatus.UNPROCESSABLE_ENTITY);
       }
-      throw new HttpException('Please try logging with a social account.', 400);
+      throw new HttpException('Please try logging with a social account.', HttpStatus.BAD_REQUEST);
     }
-    throw new HttpException('User not found.', 404);
+    throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
   }
 
   /**
@@ -155,9 +157,51 @@ export class AuthService {
           lastName: userResponse.lastName
         };
       }
-      throw new HttpException('Credentials mismatch.', 500);
+      throw new HttpException('Credentials mismatch.', HttpStatus.UNPROCESSABLE_ENTITY);
     }
-    throw new HttpException('User not found.', 404);
+    throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
+  }
+
+  async userForgotPasssword(forgotPasswordDto: ForgotPasswordDto): Promise<any> {
+    const userResponse = await this.userRepository
+      .findOne({
+        email: forgotPasswordDto.email
+      });
+    if (!userResponse) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    try {
+      const payload = { id: userResponse.id, email: userResponse.email, userType: 'user' };
+      const token = this.jwtService.sign(payload);
+      return await this.mailService.sendForgotPassword(forgotPasswordDto.email, token);
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async adminForgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<any> {
+    const adminResponse = await this.adminRepository
+      .findOne({
+        email: forgotPasswordDto.email
+      });
+    if (!adminResponse) {
+      throw new HttpException('Admin not found', HttpStatus.NOT_FOUND);
+    }
+    try {
+      const payload = { id: adminResponse.id, email: adminResponse.email, userType: 'admin' };
+      const token = this.jwtService.sign(payload);
+      return await this.mailService.sendForgotPassword(forgotPasswordDto.email, token);
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async resetPassword(password: string, id: string): Promise<any> {
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
+    const user = await this.userRepository.findOne({ id });
+    user.password = hashPassword;
+    return await this.userRepository.save(user);
   }
 
 

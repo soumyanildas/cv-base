@@ -45,7 +45,6 @@ export class JobListing {
   })
   lastApplicationDate: string;
 
-
   @Column({
     type: 'datetime',
     nullable: true

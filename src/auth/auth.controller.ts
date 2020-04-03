@@ -5,8 +5,9 @@ import { LoginDto } from '../user/dto/login.dto';
 import { MysqlExceptionFilter } from '../filters/mysql-exception.filter';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FacebookDto } from 'src/user/dto/facebook.dto';
+import { ForgotPasswordDto } from 'src/company/dto/forgot-password.dto';
 
-@Controller('auth')
+@Controller('api/v1/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
@@ -65,6 +66,36 @@ export class AuthController {
   @Post('admin/login')
   async loginAdmin(@Body() loginDto: LoginDto, @Res() res: any) {
     const response = await this.authService.loginAdmin(loginDto);
+    if (response) {
+      return res.status(HttpStatus.OK).json({
+        statusCode: 200,
+        response
+      });
+    }
+  }
+
+  @ApiTags('auth')
+  @ApiOperation({
+    description: 'Send an email to admin with a link to reset password.'
+  })
+  @Post('admin/forgotPassword')
+  async adminForgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto, @Res() res: any) {
+    const response = await this.authService.adminForgotPassword(forgotPasswordDto);
+    if (response) {
+      return res.status(HttpStatus.OK).json({
+        statusCode: 200,
+        response
+      });
+    }
+  }
+
+  @ApiTags('auth')
+  @ApiOperation({
+    description: 'Send an email to user with a link to reset password.'
+  })
+  @Post('user/forgotPassword')
+  async userForgotPasssword(@Body() forgotPasswordDto: ForgotPasswordDto, @Res() res: any) {
+    const response = await this.authService.userForgotPasssword(forgotPasswordDto);
     if (response) {
       return res.status(HttpStatus.OK).json({
         statusCode: 200,

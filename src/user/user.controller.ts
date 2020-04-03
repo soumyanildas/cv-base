@@ -6,8 +6,9 @@ import { AuthUser } from '../common/decorator/user.decorator';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { CreateUserJobInterestDto } from './dto/create-userJobInterest.dto';
 import { SearchJobDto } from './dto/search-job.dto';
+import { AddDeviceDto } from './dto/add-device.dto';
 
-@Controller()
+@Controller('api/v1')
 export class UserController {
 
   constructor(
@@ -96,7 +97,7 @@ export class UserController {
   })
   @UseGuards(AuthGuard('jwt'))
   @Post('user/askForRecommendation/:companyId/:employerId')
-  async askForRecommendation(@Res() res: any, @AuthUser() user: any, @Param('companyId') companyId: string,  @Param('employerId') employerId: string) {
+  async askForRecommendation(@Res() res: any, @AuthUser() user: any, @Param('companyId') companyId: string, @Param('employerId') employerId: string) {
     const userResponse = await this.userService.askForRecommendation(user.id, employerId, companyId);
     return res.status(HttpStatus.OK).json({
       statusCode: 200,
@@ -133,6 +134,52 @@ export class UserController {
       userResponse
     });
   }
+
+  @ApiTags('user')
+  @ApiBearerAuth()
+  @ApiOperation({
+    description: 'Currently logged in user\'s stats'
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @Get('user/stats')
+  async getStats(@Res() res: any, @AuthUser() user: any) {
+    const userResponse = await this.userService.getStats(user.id);
+    return res.status(HttpStatus.OK).json({
+      statusCode: 200,
+      userResponse
+    });
+  }
+
+  @ApiTags('user')
+  @ApiBearerAuth()
+  @ApiOperation({
+    description: 'Add deviceId to a user'
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @Put('user/addDevice')
+  async addDevice(@Body() addDeviceDto: AddDeviceDto, @Res() res: any, @AuthUser() user: any) {
+    const userResponse = await this.userService.addDevice(addDeviceDto, user.id);
+    return res.status(HttpStatus.OK).json({
+      statusCode: 200,
+      userResponse
+    });
+  }
+
+  @ApiTags('user')
+  @ApiBearerAuth()
+  @ApiOperation({
+    description: 'Remove deviceId from a user'
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @Put('user/removeDevice')
+  async removeDevice(@Res() res: any, @AuthUser() user: any) {
+    const userResponse = await this.userService.removeDevice(user.id);
+    return res.status(HttpStatus.OK).json({
+      statusCode: 200,
+      userResponse
+    });
+  }
+
 
   @ApiTags('config')
   @ApiBearerAuth()

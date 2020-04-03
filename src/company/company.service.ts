@@ -1,4 +1,4 @@
-import { Injectable, HttpException } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, getRepository } from 'typeorm';
 import { Company } from './entities/company.entity';
@@ -56,9 +56,11 @@ export class CompanyService {
         relations: ['company']
       });
     if (!userCompany) {
-      throw new HttpException('Company not found or user is not part of the company.', 404);
+      throw new HttpException('Company not found or user is not part of the company.', HttpStatus.NOT_FOUND);
     }
     const company = userCompany.company;
+    company.updatedAt = new Date().toISOString();
+    company.updatedBy = userId;
     const entity = Object.assign(new Company(), { ...company, ...updateCompanyDto });
     return await this.companyRepository.save(entity);
   }
@@ -76,7 +78,7 @@ export class CompanyService {
         relations: ['company']
       });
     if (!userCompany) {
-      throw new HttpException('Company not found or user is not part of the company.', 404);
+      throw new HttpException('Company not found or user is not part of the company.', HttpStatus.NOT_FOUND);
     }
     return userCompany.company;
   }
@@ -95,9 +97,14 @@ export class CompanyService {
         relations: ['company']
       });
     if (!userCompany) {
-      throw new HttpException('Company not found or user is not part of the company.', 404);
+      throw new HttpException('Company not found or user is not part of the company.', HttpStatus.NOT_FOUND);
     }
     createJobListingDto.company = userCompany.company;
+    const jobListing: any = createJobListingDto;
+    jobListing.createdAt = new Date().toISOString();
+    jobListing.createdBy = userId;
+    jobListing.updatedAt = new Date().toISOString();
+    jobListing.updatedBy = userId;
     const entity = Object.assign(new JobListing(), createJobListingDto);
     return await this.jobListingRepository.save(entity);
   }
@@ -108,8 +115,10 @@ export class CompanyService {
    * @param id id of the job listing to be updated
    * @description Update the details of the job listing via the id provided
    */
-  async updateJobListing(updateJobListingDto: UpdateJobListingDto, id: string): Promise<any> {
+  async updateJobListing(updateJobListingDto: UpdateJobListingDto, id: string, userId: string): Promise<any> {
     const jobListing = await this.jobListingRepository.findOne({ id });
+    jobListing.updatedAt = new Date().toISOString();
+    jobListing.updatedBy = userId;
     const entity = Object.assign(new JobListing(), { ...jobListing, ...updateJobListingDto });
     return await this.jobListingRepository.save(entity);
   }
@@ -164,13 +173,15 @@ export class CompanyService {
    * @description Currently logged in employer gives recommendation to a candidate
    * if isRecommendationGiven is `false`
    */
-  async giveRecommendation(updateRecommendationDto: UpdateRecommendationDto, id: string): Promise<any> {
+  async giveRecommendation(updateRecommendationDto: UpdateRecommendationDto, id: string, userId: string): Promise<any> {
     const userRecommendation = await this.userRecommendationRepository.findOne({ id });
     if (userRecommendation.isRecommendationGiven) {
-      throw new HttpException('Recommendation already given for this user', 409);
+      throw new HttpException('Recommendation already given for this user', HttpStatus.CONFLICT);
     }
     const recommendation: any = updateRecommendationDto;
     recommendation.isRecommendationGiven = true;
+    recommendation.updatedAt = new Date().toISOString();
+    recommendation.updatedBy = userId;
     const entity = Object.assign(new UserRecommendation(), { ...userRecommendation, ...recommendation });
     return await this.userRecommendationRepository.save(entity);
   }
@@ -198,6 +209,34 @@ export class CompanyService {
     return await queryBuilder.getMany();
   }
 
-
+  /**
+   * 
+   * @param companyId id of a company
+   * @description Get the count of the current active jobs, candidates interested
+   * and recommendation given by a company
+   */
+  async getStats(companyId: string): Promise<any> {
+    const activeJobs = await getRepository(JobListing)
+      .createQueryBuilder('jobListing')
+      .where('jobListing.companyId = :companyId', { companyId })
+      .andWhere('jobListing.lastApplicationDate >= CURDATE()')
+      .getCount();
+    const candidatesInterested = await getRepository(UserJobInterest)
+      .createQueryBuilder('userJobInterest')
+      .leftJoinAndSelect('userJobInterest.jobListing', 'jobListing')
+      .where('jobListing.companyId = :companyId', { companyId })
+      // .andWhere('jobListing.lastApplicationDate >= CURDATE()')
+      .getCount();
+    const recommendationsGiven = await getRepository(UserRecommendation)
+      .createQueryBuilder('userRecommendation')
+      .where('userRecommendation.companyId = :companyId', { companyId })
+      .andWhere('userRecommendation.isRecommendationGiven = 1')
+      .getCount();
+    return {
+      activeJobs,
+      candidatesInterested,
+      recommendationsGiven
+    };
+  }
 
 }

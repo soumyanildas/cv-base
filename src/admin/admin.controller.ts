@@ -10,7 +10,7 @@ import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { UpdateUserAdminDto } from './dto/update-user-admin.dto';
 import { UpdateCompanyAdminDto } from './dto/update-company-admin.dto';
 
-@Controller('admin')
+@Controller('api/v1/admin')
 export class AdminController {
 
   constructor(
@@ -141,7 +141,7 @@ export class AdminController {
   @Put('user/:userId')
   async updateUser(@Body() updateUserAdminDto: UpdateUserAdminDto ,@Res() res: any, @AuthUser() user: any, @Param('userId') userId: string) {
     if (user.userType === 'admin') {
-      const response = await this.adminService.updateUser(updateUserAdminDto, userId);
+      const response = await this.adminService.updateUser(updateUserAdminDto, userId, user.id);
       return res.status(HttpStatus.OK).json({
         statusCode: 200,
         response
@@ -204,7 +204,7 @@ export class AdminController {
   @Put('company/:companyId')
   async updateCompany(@Body() updateCompanyAdminDto: UpdateCompanyAdminDto ,@Res() res: any, @AuthUser() user: any, @Param('companyId') companyId: string) {
     if (user.userType === 'admin') {
-      const response = await this.adminService.updateCompany(updateCompanyAdminDto, companyId);
+      const response = await this.adminService.updateCompany(updateCompanyAdminDto, companyId, user.id);
       return res.status(HttpStatus.OK).json({
         statusCode: 200,
         response
