@@ -42,7 +42,6 @@ export class FileUploadController {
   }
 
   @ApiExcludeEndpoint()
-  @UseGuards(AuthGuard('jwt'))
   @Get('uploads/:fileId')
   async serveImage(@Param('fileId') fileId, @Res() res): Promise<any> {
     res.sendFile(fileId, { root: 'uploads' });
