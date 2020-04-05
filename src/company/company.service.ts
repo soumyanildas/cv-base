@@ -7,11 +7,12 @@ import { UpdateCompanyDto } from './dto/update-company.dto';
 import { CreateJobListingDto } from './dto/create-jobListing.dto';
 import { UpdateJobListingDto } from './dto/update-jobListing.dto';
 import { UpdateRecommendationDto } from './dto/update-recommendation.dto';
-import { UserRecommendation } from 'src/common/entities/userRecommendation.entity';
-import { UserJobInterest } from 'src/user/entities/userJobInterest.entity';
-import { UserCompany } from 'src/common/entities/userCompany.entity';
+import { UserRecommendation } from '../common/entities/userRecommendation.entity';
+import { UserJobInterest } from '../user/entities/userJobInterest.entity';
+import { UserCompany } from '../common/entities/userCompany.entity';
 import { SearchCandidateDto } from './dto/search-candidate.dto';
-import { User } from 'src/user/entities/user.entity';
+import { User } from '../user/entities/user.entity';
+import { UserJobType } from '../user/entities/userJobType.entity';
 
 @Injectable()
 export class CompanyService {
@@ -193,10 +194,16 @@ export class CompanyService {
    * of the search query
    */
   async searchCandidate(searchCandidateDto: SearchCandidateDto): Promise<any> {
+    const userJobType = getRepository(UserJobType)
+      .createQueryBuilder('userJobType')
+      .leftJoinAndSelect('userJobType.user', 'user')
+      .select('user.id', 'id')
+      .where('userJobType.jobTypeId = :jobTypes', { jobTypes: searchCandidateDto.jobTypes })
+
     let queryBuilder = getRepository(User)
       .createQueryBuilder('user')
       .where('user.userType = :userType', { userType: 'candidate' })
-      .andWhere('user.jobTypes = :jobTypes', { jobTypes: searchCandidateDto.jobTypes })
+      .andWhere('user.id IN (' + userJobType.getQuery() + ')')
       .andWhere('user.jobStatus = :jobStatus', { jobStatus: searchCandidateDto.jobStatus });
     if (searchCandidateDto.city) {
       queryBuilder = queryBuilder
@@ -206,6 +213,8 @@ export class CompanyService {
       queryBuilder = queryBuilder
         .andWhere(`CONCAT(user.firstName, ' ', user.lastName) LIKE '%${searchCandidateDto.candidateName}%'`)
     }
+    queryBuilder = queryBuilder
+      .setParameters(userJobType.getParameters());
     return await queryBuilder.getMany();
   }
 
