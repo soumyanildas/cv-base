@@ -199,6 +199,7 @@ export class CompanyService {
       .leftJoinAndSelect('userJobType.user', 'user')
       .select('user.id', 'id')
       .where('userJobType.jobTypeId = :jobTypes', { jobTypes: searchCandidateDto.jobTypes })
+      .andWhere('userJobType.experience >= :experience', { experience: searchCandidateDto.experience });
 
     let queryBuilder = getRepository(User)
       .createQueryBuilder('user')

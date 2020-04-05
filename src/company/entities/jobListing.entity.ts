@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinTable, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Company } from './company.entity';
 import { UserJobInterest } from '../../user/entities/userJobInterest.entity';
+import { JobType } from 'src/user/entities/jobType.entity';
 
 @Entity('job_listings')
 export class JobListing {
@@ -17,9 +18,8 @@ export class JobListing {
   })
   jobName: string;
 
-  @Column({
-    type: 'text'
-  })
+  @ManyToOne(type => JobType)
+  @JoinColumn({ name: 'jobCategory' })
   jobCategory: string;
 
   @Column({

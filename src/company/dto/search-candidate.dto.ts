@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional } from "class-validator";
+import { IsString, IsNotEmpty, IsOptional, IsNumber, Min, Max } from "class-validator";
 import { ApiPropertyOptional, ApiProperty } from "@nestjs/swagger";
 
 export class SearchCandidateDto {
@@ -22,5 +22,12 @@ export class SearchCandidateDto {
   @IsString()
   @IsOptional()
   readonly candidateName: string;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  @Min(0)
+  @Max(10)
+  readonly experience: number;
 
 }

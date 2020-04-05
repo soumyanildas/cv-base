@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsNumber } from "class-validator";
+import { IsString, IsNotEmpty, IsNumber, Min, Max } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class CreateUserJobTypeDto {
@@ -11,6 +11,8 @@ export class CreateUserJobTypeDto {
   @ApiProperty()
   @IsNumber()
   @IsNotEmpty()
+  @Min(0)
+  @Max(10)
   readonly experience: number;
 
 }

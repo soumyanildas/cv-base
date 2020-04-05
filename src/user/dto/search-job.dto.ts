@@ -8,9 +8,9 @@ export class SearchJobDto {
   @IsOptional()
   readonly city: string;
 
-  @ApiPropertyOptional()
+  @ApiProperty()
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   readonly jobCategory: string;
 
   @ApiProperty()
