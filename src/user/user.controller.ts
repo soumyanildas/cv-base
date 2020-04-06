@@ -48,7 +48,7 @@ export class UserController {
   @ApiTags('user')
   @ApiBearerAuth()
   @ApiOperation({
-    description: 'View the basic info of user and also their skills, strengths, jobTypes and employment history'
+    description: 'Show interest in an open job as a candidate'
   })
   @UseGuards(AuthGuard('jwt'))
   @Post('user/jobInterest/:jobListingId')
@@ -63,7 +63,37 @@ export class UserController {
   @ApiTags('user')
   @ApiBearerAuth()
   @ApiOperation({
-    description: 'View the basic info of user and also their skills, strengths, jobTypes and employment history'
+    description: 'View all the active companies'
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @Get('user/companies')
+  async getCompanies(@Res() res: any) {
+    const userResponse = await this.userService.getCompanies();
+    return res.status(HttpStatus.OK).json({
+      statusCode: 200,
+      userResponse
+    });
+  }
+
+  @ApiTags('user')
+  @ApiBearerAuth()
+  @ApiOperation({
+    description: 'Get detail of a particular company along with it\'s employer and current active job listings'
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @Get('user/company/:companyId')
+  async getCompany(@Res() res: any, @Param('companyId') companyId: string) {
+    const userResponse = await this.userService.getCompany(companyId);
+    return res.status(HttpStatus.OK).json({
+      statusCode: 200,
+      userResponse
+    });
+  }
+
+  @ApiTags('user')
+  @ApiBearerAuth()
+  @ApiOperation({
+    description: 'Follow a company as a candidate'
   })
   @UseGuards(AuthGuard('jwt'))
   @Post('user/followCompany/:companyId')

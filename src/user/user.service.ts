@@ -112,6 +112,30 @@ export class UserService {
     return await this.userJobInterestRepository.save(entity);
   }
 
+  /**lastApplicationDate
+   * @description Get all the active companies from the database
+   */
+  async getCompanies(): Promise<any> {
+    return await this.companyRepository.find({ where: { isActive: true } });
+  }
+
+  /**
+   * 
+   * @param id id of the company
+   * @description Get the details of a company along with it's 
+   * employer and current active job listings
+   */
+  async getCompany(id: string): Promise<any> {
+    return await getRepository(Company)
+      .createQueryBuilder('company')
+      .leftJoinAndSelect('company.userCompany', 'userCompany')
+      .leftJoinAndSelect('company.jobListings', 'jobListings')
+      .leftJoinAndSelect('userCompany.user', 'user')
+      .where('company.id = :id', { id })
+      .andWhere('jobListings.lastApplicationDate >= CURDATE()')
+      .getMany();
+  }
+
   /**
    * 
    * @param userId id of the currently logged in user who wants to follow a company
