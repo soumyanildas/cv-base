@@ -31,7 +31,6 @@ export class CreateJobListingDto {
 
   @ApiProperty()
   @IsISO8601()
-  @MinDate(new Date(), { message: `minimal allowed date for lastApplicationDate is ${new Date().toISOString().split('T')[0]}`})
   readonly lastApplicationDate: string;
 
   company: UpdateCompanyDto;

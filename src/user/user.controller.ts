@@ -3,7 +3,7 @@ import { UserService } from './user.service';
 import { AuthGuard } from '@nestjs/passport';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthUser } from '../common/decorator/user.decorator';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { CreateUserJobInterestDto } from './dto/create-userJobInterest.dto';
 import { SearchJobDto } from './dto/search-job.dto';
 import { AddDeviceDto } from './dto/add-device.dto';
@@ -23,10 +23,10 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Put('user')
   async updateUser(@Body() updateUserDto: UpdateUserDto, @Res() res: any, @AuthUser() user: any) {
-    const userResponse = await this.userService.updateUser(updateUserDto, user.id);
+    const response = await this.userService.updateUser(updateUserDto, user.id);
     return res.status(HttpStatus.OK).json({
       statusCode: 200,
-      userResponse
+      response
     });
   }
 
@@ -38,10 +38,25 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Get('user')
   async getUser(@Res() res: any, @AuthUser() user: any) {
-    const userResponse = await this.userService.getUser(user.id);
+    const response = await this.userService.getUser(user.id);
     return res.status(HttpStatus.OK).json({
       statusCode: 200,
-      userResponse
+      response
+    });
+  }
+
+  @ApiTags('user')
+  @ApiBearerAuth()
+  @ApiOperation({
+    description: 'View the details of a particular jobListing'
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @Get('user/jobListing/:jobListingId')
+  async getJob(@Res() res: any, @Param('jobListingId') jobListingId: string) {
+    const response = await this.userService.getJob(jobListingId);
+    return res.status(HttpStatus.OK).json({
+      statusCode: 200,
+      response
     });
   }
 
@@ -53,10 +68,10 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Post('user/jobInterest/:jobListingId')
   async createUserJobInterest(@Body() createUserJobInterestDto: CreateUserJobInterestDto, @Res() res: any, @AuthUser() user: any, @Param('jobListingId') jobListingId: string) {
-    const userResponse = await this.userService.createUserJobInterest(createUserJobInterestDto, user.id, jobListingId);
+    const response = await this.userService.createUserJobInterest(createUserJobInterestDto, user.id, jobListingId);
     return res.status(HttpStatus.OK).json({
       statusCode: 200,
-      userResponse
+      response
     });
   }
 
@@ -68,10 +83,10 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Get('user/companies')
   async getCompanies(@Res() res: any) {
-    const userResponse = await this.userService.getCompanies();
+    const response = await this.userService.getCompanies();
     return res.status(HttpStatus.OK).json({
       statusCode: 200,
-      userResponse
+      response
     });
   }
 
@@ -83,10 +98,10 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Get('user/company/:companyId')
   async getCompany(@Res() res: any, @Param('companyId') companyId: string) {
-    const userResponse = await this.userService.getCompany(companyId);
+    const response = await this.userService.getCompany(companyId);
     return res.status(HttpStatus.OK).json({
       statusCode: 200,
-      userResponse
+      response
     });
   }
 
@@ -98,10 +113,10 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Post('user/followCompany/:companyId')
   async followCompany(@Res() res: any, @AuthUser() user: any, @Param('companyId') companyId: string) {
-    const userResponse = await this.userService.followCompany(user.id, companyId);
+    const response = await this.userService.followCompany(user.id, companyId);
     return res.status(HttpStatus.OK).json({
       statusCode: 200,
-      userResponse
+      response
     });
   }
 
@@ -113,10 +128,10 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Get('user/findEmployers/:companyId')
   async findEmployers(@Res() res: any, @AuthUser() user: any, @Param('companyId') companyId: string) {
-    const userResponse = await this.userService.findEmployers(companyId);
+    const response = await this.userService.findEmployers(companyId);
     return res.status(HttpStatus.OK).json({
       statusCode: 200,
-      userResponse
+      response
     });
   }
 
@@ -128,10 +143,10 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Post('user/askForRecommendation/:companyId/:employerId')
   async askForRecommendation(@Res() res: any, @AuthUser() user: any, @Param('companyId') companyId: string, @Param('employerId') employerId: string) {
-    const userResponse = await this.userService.askForRecommendation(user.id, employerId, companyId);
+    const response = await this.userService.askForRecommendation(user.id, employerId, companyId);
     return res.status(HttpStatus.OK).json({
       statusCode: 200,
-      userResponse
+      response
     });
   }
 
@@ -143,10 +158,10 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Post('user/recommendationsList')
   async recommendationsList(@Res() res: any, @AuthUser() user: any) {
-    const userResponse = await this.userService.recommendationsList(user.id);
+    const response = await this.userService.recommendationsList(user.id);
     return res.status(HttpStatus.OK).json({
       statusCode: 200,
-      userResponse
+      response
     });
   }
 
@@ -158,10 +173,10 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Post('user/searchJob')
   async searchJob(@Body() searchJobDto: SearchJobDto, @Res() res: any) {
-    const userResponse = await this.userService.searchJob(searchJobDto);
+    const response = await this.userService.searchJob(searchJobDto);
     return res.status(HttpStatus.OK).json({
       statusCode: 200,
-      userResponse
+      response
     });
   }
 
@@ -173,10 +188,10 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Get('user/stats')
   async getStats(@Res() res: any, @AuthUser() user: any) {
-    const userResponse = await this.userService.getStats(user.id);
+    const response = await this.userService.getStats(user.id);
     return res.status(HttpStatus.OK).json({
       statusCode: 200,
-      userResponse
+      response
     });
   }
 
@@ -188,10 +203,10 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Put('user/addDevice')
   async addDevice(@Body() addDeviceDto: AddDeviceDto, @Res() res: any, @AuthUser() user: any) {
-    const userResponse = await this.userService.addDevice(addDeviceDto, user.id);
+    const response = await this.userService.addDevice(addDeviceDto, user.id);
     return res.status(HttpStatus.OK).json({
       statusCode: 200,
-      userResponse
+      response
     });
   }
 
@@ -203,10 +218,10 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Put('user/removeDevice')
   async removeDevice(@Res() res: any, @AuthUser() user: any) {
-    const userResponse = await this.userService.removeDevice(user.id);
+    const response = await this.userService.removeDevice(user.id);
     return res.status(HttpStatus.OK).json({
       statusCode: 200,
-      userResponse
+      response
     });
   }
 

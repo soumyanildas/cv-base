@@ -86,6 +86,15 @@ export class UserService {
 
   /**
    * 
+   * @param id id of the jobListing
+   * @description Returns details of an individual jobListing
+   */
+  async getJob(id: string): Promise<any> {
+    return await this.jobListingRepository.findOne({ id })
+  }
+
+  /**
+   * 
    * @param createUserJobInterestDto DTO to encapsulate createUserJobInterest data
    * @param userId id of the currently logged in user who wants to show interest in a job
    * @param jobListingId id of the interested job listing

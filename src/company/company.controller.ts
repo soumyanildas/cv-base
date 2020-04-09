@@ -233,10 +233,10 @@ export class CompanyController {
   @Get('company/:companyId/stats')
   async getStats(@Res() res: any, @AuthUser() user: any, @Param('companyId') companyId: string) {
     if (user.userType === 'employer') {
-      const userResponse = await this.companyService.getStats(companyId);
+      const response = await this.companyService.getStats(companyId);
       return res.status(HttpStatus.OK).json({
         statusCode: 200,
-        userResponse
+        response
       });
     }
     return res.status(HttpStatus.UNAUTHORIZED).json({
