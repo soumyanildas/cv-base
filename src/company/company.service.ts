@@ -157,14 +157,20 @@ export class CompanyService {
   /**
    * 
    * @param userId id of the currently logged in employer
-   * @description Get a list of all the recommendations asked by candidates 
-   * for the currently logged in employer 
+   * @description Get a list of all the pending recommendation and
+   * the given recommendation by the currently logged in employer 
    */
   async recommendationList(userId: string): Promise<any> {
-    return await this.userRecommendationRepository
+    const recommendations = await this.userRecommendationRepository
       .find({
-        where: { recommendedBy: userId, isRecommendationGiven: false }
+        where: { recommendedBy: userId }
       });
+    const recommendationGiven = recommendations.filter((data) => data.isRecommendationGiven);
+    const recommendationPending = recommendations.filter((data) => !data.isRecommendationGiven);
+    return {
+      recommendationPending,
+      recommendationGiven
+    };
   }
 
   /**
