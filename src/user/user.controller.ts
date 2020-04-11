@@ -156,7 +156,7 @@ export class UserController {
     description: 'Get all recommendations received by user'
   })
   @UseGuards(AuthGuard('jwt'))
-  @Post('user/recommendationsList')
+  @Post('user/recommendationList')
   async recommendationsList(@Res() res: any, @AuthUser() user: any) {
     const response = await this.userService.recommendationsList(user.id);
     return res.status(HttpStatus.OK).json({

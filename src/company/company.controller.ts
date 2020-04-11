@@ -64,7 +64,8 @@ export class CompanyController {
   })
   @UseGuards(AuthGuard('jwt'))
   @Get('company/:companyId')
-  async getUser(@Res() res: any, @Param('companyId') companyId: string, @AuthUser() user: any) {
+  async viewCompany(@Res() res: any, @Param('companyId') companyId: string, @AuthUser() user: any) {
+    console.log('This is being called 2?');
     if (user.userType === 'employer') {
       const response = await this.companyService.viewCompany(companyId, user.id)
       return res.status(HttpStatus.OK).json({
@@ -86,6 +87,7 @@ export class CompanyController {
   @UseGuards(AuthGuard('jwt'))
   @Post('company/:companyId/jobListing/create')
   async createJobListing(@Body() createJobListingDto: CreateJobListingDto, @Param('companyId') companyId: string, @Res() res: any, @AuthUser() user: any) {
+    console.log('This is being called 1?');
     if (user.userType === 'employer') {
       const response = await this.companyService.createJobListing(createJobListingDto, companyId, user.id)
       return res.status(HttpStatus.OK).json({
@@ -168,10 +170,11 @@ export class CompanyController {
     description: 'List of all recommendations asked by candidates for currently logged in employer'
   })
   @UseGuards(AuthGuard('jwt'))
-  @Get('company/recommendationList')
-  async recommendationList(@Res() res: any, @AuthUser() user: any) {
+  @Get('company/:companyId/recommendationList')
+  async recommendationList(@Res() res: any, @Param('companyId') companyId: string, @AuthUser() user: any) {
+    console.log('This is being called?');
     if (user.userType === 'employer') {
-      const response = await this.companyService.recommendationList(user.id)
+      const response = await this.companyService.recommendationList(companyId, user.id)
       return res.status(HttpStatus.OK).json({
         statusCode: 200,
         response
