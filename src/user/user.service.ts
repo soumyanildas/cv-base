@@ -86,11 +86,24 @@ export class UserService {
 
   /**
    * 
-   * @param id id of the jobListing
+   * @param jobId id of the jobListing
+   * @param userId id of the candidate
    * @description Returns details of an individual jobListing
    */
-  async getJob(id: string): Promise<any> {
-    return await this.jobListingRepository.findOne({ id })
+  async getJob(jobId: string, userId: string): Promise<any> {
+    const isApplied = await this.userJobInterestRepository
+      .count({
+        where: { user: userId, jobListing: jobId }
+      });
+    const jobListing = await this.jobListingRepository
+      .findOne({
+        where: { id: jobId },
+        relations: ['company']
+      });
+    return {
+      isApplied: isApplied ? true : false,
+      ...jobListing
+    };
   }
 
   /**
@@ -130,19 +143,28 @@ export class UserService {
 
   /**
    * 
-   * @param id id of the company
+   * @param companyId id of the company
+   * @param userId id of the candidate
    * @description Get the details of a company along with it's 
    * employer and current active job listings
    */
-  async getCompany(id: string): Promise<any> {
-    return await getRepository(Company)
+  async getCompany(companyId: string, userId: string): Promise<any> {
+    const isFollowing = await this.userCompanyFollowRepository
+      .count({
+        where: { company: companyId, user: userId }
+      });
+    const company = await getRepository(Company)
       .createQueryBuilder('company')
       .leftJoinAndSelect('company.userCompany', 'userCompany')
       .leftJoinAndSelect('company.jobListings', 'jobListings')
       .leftJoinAndSelect('userCompany.user', 'user')
-      .where('company.id = :id', { id })
+      .where('company.id = :companyId', { companyId })
       .andWhere('jobListings.lastApplicationDate >= CURDATE()')
-      .getMany();
+      .getOne();
+    return {
+      isFollowing: isFollowing ? true : false,
+      ...company
+    }
   }
 
   /**

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
+import { config } from '../../common/config';
 
 @Injectable()
 export class MailService {
@@ -9,7 +10,7 @@ export class MailService {
   constructor(
     private readonly mailerService: MailerService
   ) {
-    this.SERVER_URL = 'http://localhost:4000/reset-password';
+    this.SERVER_URL = config.baseURL;
   }
 
   sendPassword(email: string, randomPassword: string): Promise<any> {
@@ -39,7 +40,7 @@ export class MailService {
           to: email,
           from: 'noreply@soumyanildas.com', // sender address
           subject: 'MA12 CV Base - Reset Password', // Subject line
-          text: `Please reset your password by following this link: ${this.SERVER_URL}?token=${token}`, // plaintext body
+          text: `Please reset your password by following this link: ${this.SERVER_URL}reset-password?token=${token}`, // plaintext body
         })
         .then(() => {
           resolve("Successfully sent email");

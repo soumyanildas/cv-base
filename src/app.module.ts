@@ -10,6 +10,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { FileUploadModule } from './file-upload/file-upload.module';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './auth/constants';
+import { config } from './common/config';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { jwtConstants } from './auth/constants';
     CompanyModule,
     AdminModule,
     MailerModule.forRoot({
-      transport: 'smtps://user@domain.com:pass@smtp.domain.com',
+      transport: config.smtp,
     }),
     FileUploadModule,
     JwtModule.register({

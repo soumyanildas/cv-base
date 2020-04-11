@@ -36,3 +36,4 @@ lerna-debug.log*
 ormconfig.json
 README.md
 uploads/
+src/common/config.ts

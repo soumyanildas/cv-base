@@ -5,6 +5,7 @@ import { diskStorage } from 'multer'
 import { extname } from 'path'
 import { AuthGuard } from '@nestjs/passport';
 import { FileUploadDto } from './file-upload.dto';
+import { config } from '../common/config';
 
 @Controller()
 export class FileUploadController {
@@ -12,7 +13,7 @@ export class FileUploadController {
   SERVER_URL: string;
 
   constructor() {
-    this.SERVER_URL = 'http://localhost:4000/';
+    this.SERVER_URL = config.baseURL;
   }
 
   @ApiTags('general')

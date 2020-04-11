@@ -52,8 +52,8 @@ export class UserController {
   })
   @UseGuards(AuthGuard('jwt'))
   @Get('user/jobListing/:jobListingId')
-  async getJob(@Res() res: any, @Param('jobListingId') jobListingId: string) {
-    const response = await this.userService.getJob(jobListingId);
+  async getJob(@Res() res: any, @Param('jobListingId') jobListingId: string, @AuthUser() user: any) {
+    const response = await this.userService.getJob(jobListingId, user.id);
     return res.status(HttpStatus.OK).json({
       statusCode: 200,
       response
@@ -97,8 +97,8 @@ export class UserController {
   })
   @UseGuards(AuthGuard('jwt'))
   @Get('user/company/:companyId')
-  async getCompany(@Res() res: any, @Param('companyId') companyId: string) {
-    const response = await this.userService.getCompany(companyId);
+  async getCompany(@Res() res: any, @Param('companyId') companyId: string, @AuthUser() user: any) {
+    const response = await this.userService.getCompany(companyId, user.id);
     return res.status(HttpStatus.OK).json({
       statusCode: 200,
       response
