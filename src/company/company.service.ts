@@ -163,7 +163,8 @@ export class CompanyService {
   async recommendationList(companyId: string, userId: string): Promise<any> {
     const recommendations = await this.userRecommendationRepository
       .find({
-        where: { company: companyId, recommendedBy: userId }
+        where: { company: companyId, recommendedBy: userId },
+        relations: ['recommendedBy', 'user']
       });
     const recommendationGiven = recommendations.filter((data) => data.isRecommendationGiven);
     const recommendationPending = recommendations.filter((data) => !data.isRecommendationGiven);
