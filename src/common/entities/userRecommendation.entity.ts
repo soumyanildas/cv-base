@@ -2,6 +2,11 @@ import { Entity, PrimaryGeneratedColumn, ManyToMany, JoinColumn, Column, ManyToO
 import { User } from '../../user/entities/user.entity';
 import { Company } from '../../company/entities/company.entity';
 
+export enum RecommendationType {
+  text = 'text',
+  sound = 'sound'
+}
+
 @Entity()
 export class UserRecommendation {
 
@@ -13,6 +18,13 @@ export class UserRecommendation {
     nullable: true
   })
   recommendation: string;
+
+  @Column({
+    type: 'enum',
+    enum: RecommendationType,
+    nullable: true
+  })
+  recommendationType: string;
 
   @Column({
     type: 'boolean',
