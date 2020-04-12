@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsUrl } from "class-validator";
+import { IsString, IsNotEmpty, IsUrl, IsOptional } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class CreateUserSkillDto {
@@ -9,9 +9,11 @@ export class CreateUserSkillDto {
 
   @ApiPropertyOptional()
   @IsString()
+  @IsOptional()
   readonly comment: string;
 
   @ApiPropertyOptional()
   @IsUrl()
+  @IsOptional()
   readonly media: string;
 }
