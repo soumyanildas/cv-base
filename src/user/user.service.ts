@@ -80,7 +80,7 @@ export class UserService {
     return await this.userRepository
       .findOne({
         where: { id },
-        relations: ['strengths', 'skills', 'jobTypes', 'employmentHistories']
+        relations: ['strengths', 'skills', 'jobTypes', 'employmentHistories', 'recommendations']
       });
   }
 
