@@ -2,6 +2,11 @@ import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { User } from './user.entity';
 import { Skill } from './skill.entity';
 
+export enum mediaType {
+  video = 'video',
+  image = 'image'
+};
+
 @Entity()
 export class UserSkill {
 
@@ -13,6 +18,13 @@ export class UserSkill {
     nullable: true
   })
   media: string;
+
+  @Column({
+    type: 'enum',
+    enum: mediaType,
+    nullable: true
+  })
+  mediaType: string;
 
   @Column({
     type: 'text',

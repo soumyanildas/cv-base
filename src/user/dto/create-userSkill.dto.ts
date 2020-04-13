@@ -1,9 +1,14 @@
-import { IsString, IsNotEmpty, IsUrl, IsOptional } from "class-validator";
+import { IsString, IsNotEmpty, IsUrl, IsOptional, IsEnum } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
+export enum mediaType {
+  video = 'video',
+  image = 'image'
+};
+
 export class CreateUserSkillDto {
-  
-  @ApiProperty({ description: 'Id of the skill' })  @IsString()
+
+  @ApiProperty({ description: 'Id of the skill' }) @IsString()
   @IsNotEmpty()
   readonly skill: string;
 
@@ -16,4 +21,9 @@ export class CreateUserSkillDto {
   @IsUrl()
   @IsOptional()
   readonly media: string;
+
+  @ApiPropertyOptional({ enum: ['video', 'image'] })
+  @IsEnum(mediaType)
+  @IsOptional()
+  readonly mediaType: string;
 }
