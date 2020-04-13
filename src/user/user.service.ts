@@ -77,11 +77,18 @@ export class UserService {
    * @description Get the basic info and strengths, skills, jobTypes and employmentHistories of the user
    */
   async getUser(id: string): Promise<any> {
-    return await this.userRepository
-      .findOne({
-        where: { id },
-        relations: ['strengths', 'skills', 'jobTypes', 'employmentHistories', 'recommendations']
-      });
+    return await getRepository(User)
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.strengths', 'strengths')
+      .leftJoinAndSelect('user.skills', 'skills')
+      .leftJoinAndSelect('user.jobTypes', 'jobTypes')
+      .leftJoinAndSelect('user.employmentHistories', 'employmentHistories')
+      .leftJoinAndSelect('user.recommendations', 'recommendations')
+      .leftJoinAndSelect('recommendations.recommendedBy', 'recommendedBy')
+      .leftJoinAndSelect('recommendations.company', 'company')
+      .where('user.id = :id', { id })
+      .andWhere('recommendations.isRecommendationGiven = 1')
+      .getOne();
   }
 
   /**
