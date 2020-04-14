@@ -13,9 +13,12 @@ import { UserCompany } from '../common/entities/userCompany.entity';
 import { SearchCandidateDto } from './dto/search-candidate.dto';
 import { User } from '../user/entities/user.entity';
 import { UserJobType } from '../user/entities/userJobType.entity';
+import { UserCompanyFollow } from '../common/entities/userCompanyFollow.entity';
 
 @Injectable()
 export class CompanyService {
+
+  onesignalClient: any;
 
   constructor(
     @InjectRepository(Company) private readonly companyRepository: Repository<Company>,
@@ -23,7 +26,9 @@ export class CompanyService {
     @InjectRepository(UserRecommendation) private readonly userRecommendationRepository: Repository<UserRecommendation>,
     @InjectRepository(UserJobInterest) private readonly userJobInterestRepository: Repository<UserJobInterest>,
     @InjectRepository(UserCompany) private readonly userCompanyRepository: Repository<UserCompany>,
-  ) { }
+    @InjectRepository(UserCompanyFollow) private readonly userCompanyFollowRepository: Repository<UserCompanyFollow>,
+  ) {
+  }
 
   /**
    * 
@@ -152,6 +157,44 @@ export class CompanyService {
       job,
       users
     };
+  }
+
+  /**
+   * 
+   * @param companyId id of the company
+   * @description Get a list of all the candidates interested/following the company
+   */
+  async interestedCandidates(companyId: string): Promise<any> {
+    return await getRepository(UserCompanyFollow)
+      .createQueryBuilder('userCompanyFollow')
+      .leftJoinAndSelect('userCompanyFollow.user', 'user')
+      .leftJoinAndSelect('userCompanyFollow.company', 'company')
+      .where('userCompanyFollow.company = :companyId', { companyId })
+      .getMany();
+  }
+
+  /**
+   * 
+   * @param candidateId id of the candidate
+   * @description Get details of a candidate
+   */
+  async getCandidate(candidateId: string): Promise<any> {
+    return await getRepository(User)
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.strengths', 'strengths')
+      .leftJoinAndSelect('strengths.strength', 'strength')
+      .leftJoinAndSelect('user.skills', 'skills')
+      .leftJoinAndSelect('skills.skill', 'skill')
+      .leftJoinAndSelect('user.jobTypes', 'jobTypes')
+      .leftJoinAndSelect('jobTypes.jobType', 'jobType')
+      .leftJoinAndSelect('user.employmentHistories', 'employmentHistories')
+      .leftJoinAndSelect('user.recommendations', 'recommendations')
+      .leftJoinAndSelect('recommendations.recommendedBy', 'recommendedBy')
+      .leftJoinAndSelect('recommendations.company', 'company')
+      .where('user.id = :candidateId', { candidateId })
+      .andWhere('user.userType = :userType', { userType: 'candidate' })
+      .andWhere('recommendations.isRecommendationGiven = 1')
+      .getOne();
   }
 
   /**

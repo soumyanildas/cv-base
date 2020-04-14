@@ -78,6 +78,22 @@ export class UserController {
   @ApiTags('user')
   @ApiBearerAuth()
   @ApiOperation({
+    description: 'Get a list of all the interested jobs as a candidate'
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @Get('user/interestedJobs')
+  async interestedJobs(@Res() res: any, @AuthUser() user: any) {
+    const response = await this.userService.interestedJobs(user.id);
+    return res.status(HttpStatus.OK).json({
+      statusCode: 200,
+      response
+    });
+  }
+
+
+  @ApiTags('user')
+  @ApiBearerAuth()
+  @ApiOperation({
     description: 'View all the active companies'
   })
   @UseGuards(AuthGuard('jwt'))
@@ -114,6 +130,21 @@ export class UserController {
   @Post('user/followCompany/:companyId')
   async followCompany(@Res() res: any, @AuthUser() user: any, @Param('companyId') companyId: string) {
     const response = await this.userService.followCompany(user.id, companyId);
+    return res.status(HttpStatus.OK).json({
+      statusCode: 200,
+      response
+    });
+  }
+
+  @ApiTags('user')
+  @ApiBearerAuth()
+  @ApiOperation({
+    description: 'Get a list of all the followed companies'
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @Get('user/followedCompanies')
+  async followedCompanies(@Res() res: any, @AuthUser() user: any) {
+    const response = await this.userService.followedCompanies(user.id);
     return res.status(HttpStatus.OK).json({
       statusCode: 200,
       response

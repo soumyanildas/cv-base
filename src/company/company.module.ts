@@ -8,10 +8,11 @@ import { UserRecommendation } from '../common/entities/userRecommendation.entity
 import { UserJobInterest } from '../user/entities/userJobInterest.entity';
 import { UserCompany } from '../common/entities/userCompany.entity';
 import { UserJobType } from '../user/entities/userJobType.entity';
+import { UserCompanyFollow } from 'src/common/entities/userCompanyFollow.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Company, JobListing, UserRecommendation, UserJobInterest, UserCompany, UserJobType])
+    TypeOrmModule.forFeature([Company, JobListing, UserRecommendation, UserJobInterest, UserCompany, UserJobType, UserCompanyFollow])
   ],
   providers: [CompanyService],
   controllers: [CompanyController]

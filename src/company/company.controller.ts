@@ -146,6 +146,48 @@ export class CompanyController {
   @ApiTags('company')
   @ApiBearerAuth()
   @ApiOperation({
+    description: 'View list of all the interested candidates for a company'
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @Get('company/:companyId/interestedCandidates')
+  async interestedCandidates(@Res() res: any, @AuthUser() user: any, @Param('companyId') companyId: string) {
+    if (user.userType === 'employer') {
+      const response = await this.companyService.interestedCandidates(companyId)
+      return res.status(HttpStatus.OK).json({
+        statusCode: 200,
+        response
+      });
+    }
+    return res.status(HttpStatus.UNAUTHORIZED).json({
+      statusCode: 401,
+      message: 'You need to be an employer to access this route.'
+    });
+  }
+
+  @ApiTags('company')
+  @ApiBearerAuth()
+  @ApiOperation({
+    description: 'View details of a candidate'
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @Get('company/candidate/:candidateId')
+  async getCandidate(@Res() res: any, @AuthUser() user: any, @Param('candidateId') candidateId: string) {
+    if (user.userType === 'employer') {
+      const response = await this.companyService.getCandidate(candidateId)
+      return res.status(HttpStatus.OK).json({
+        statusCode: 200,
+        response
+      });
+    }
+    return res.status(HttpStatus.UNAUTHORIZED).json({
+      statusCode: 401,
+      message: 'You need to be an employer to access this route.'
+    });
+  }
+
+  @ApiTags('company')
+  @ApiBearerAuth()
+  @ApiOperation({
     description: 'View a single job listing'
   })
   @UseGuards(AuthGuard('jwt'))

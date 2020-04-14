@@ -80,8 +80,11 @@ export class UserService {
     return await getRepository(User)
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.strengths', 'strengths')
+      .leftJoinAndSelect('strengths.strength', 'strength')
       .leftJoinAndSelect('user.skills', 'skills')
+      .leftJoinAndSelect('skills.skill', 'skill')
       .leftJoinAndSelect('user.jobTypes', 'jobTypes')
+      .leftJoinAndSelect('jobTypes.jobType', 'jobType')
       .leftJoinAndSelect('user.employmentHistories', 'employmentHistories')
       .leftJoinAndSelect('user.recommendations', 'recommendations')
       .leftJoinAndSelect('recommendations.recommendedBy', 'recommendedBy')
@@ -141,6 +144,20 @@ export class UserService {
     return await this.userJobInterestRepository.save(entity);
   }
 
+  /**
+   * 
+   * @param userId id of the currently logged in user 
+   * @description Get a list of all the interested jobs of the currently logged in user
+   */
+  async interestedJobs(userId: string): Promise<any> {
+    return await getRepository(UserJobInterest)
+      .createQueryBuilder('userJobInterest')
+      .leftJoinAndSelect('userJobInterest.jobListing', 'jobListing')
+      .leftJoinAndSelect('jobListing.company', 'company')
+      .where('userJobInterest.user = :userId', { userId })
+      .getMany();
+  }
+
   /**lastApplicationDate
    * @description Get all the active companies from the database
    */
@@ -198,6 +215,20 @@ export class UserService {
       });
     const entity = Object.assign(new UserCompanyFollow(), { user, company })
     return await this.userCompanyFollowRepository.save(entity);
+  }
+
+  /**
+   * 
+   * @param userId id of the currently logged in user
+   * @description Get a list of all the companies currently logged in user
+   * is following
+   */
+  async followedCompanies(userId: string): Promise<any> {
+    return await this.userCompanyFollowRepository
+      .findOne({
+        where: { user: userId },
+        relations: ['company']
+      });
   }
 
   /**
