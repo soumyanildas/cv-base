@@ -15,6 +15,8 @@ import { User } from '../user/entities/user.entity';
 import { UserJobType } from '../user/entities/userJobType.entity';
 import { UserCompanyFollow } from '../common/entities/userCompanyFollow.entity';
 
+import * as OneSignal from 'onesignal-node'
+
 @Injectable()
 export class CompanyService {
 
@@ -28,6 +30,7 @@ export class CompanyService {
     @InjectRepository(UserCompany) private readonly userCompanyRepository: Repository<UserCompany>,
     @InjectRepository(UserCompanyFollow) private readonly userCompanyFollowRepository: Repository<UserCompanyFollow>,
   ) {
+    this.onesignalClient = new OneSignal.Client('781d7446-8bb4-41ac-a02f-f37d3f5b45fb', 'NzRlNzlhYzMtZjE3Yi00ZjgwLWEzNzAtMTMzZDlhZjhhYmJi');
   }
 
   /**
@@ -114,7 +117,24 @@ export class CompanyService {
     jobListing.updatedAt = new Date().toISOString();
     jobListing.updatedBy = userId;
     const entity = Object.assign(new JobListing(), createJobListingDto);
-    return await this.jobListingRepository.save(entity);
+    const jobListingResponse = await this.jobListingRepository.save(entity);
+    // Sending push notification when a new job listing is posted to the candidats following the company
+    const userFollowing = await this.userCompanyFollowRepository
+      .find({
+        where: { company: companyId },
+        relations: ['user']
+      });
+    const userDevicesId = userFollowing.map((data) => data.user.deviceId);
+    if (userDevicesId.length) {
+      const notification = {
+        'headings': { en: 'New Job Listing' },
+        'contents': { en: `${userCompany.company.companyName} posted a new job listing` },
+        'include_player_ids': userDevicesId,
+        'data': { jobListingId: jobListingResponse.id }
+      };
+      this.onesignalClient.createNotification(notification);
+    }
+    return jobListingResponse;
   }
 
   /**
