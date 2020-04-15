@@ -30,7 +30,7 @@ export class CompanyService {
     @InjectRepository(UserCompany) private readonly userCompanyRepository: Repository<UserCompany>,
     @InjectRepository(UserCompanyFollow) private readonly userCompanyFollowRepository: Repository<UserCompanyFollow>,
   ) {
-    this.onesignalClient = new OneSignal.Client('781d7446-8bb4-41ac-a02f-f37d3f5b45fb', 'NzRlNzlhYzMtZjE3Yi00ZjgwLWEzNzAtMTMzZDlhZjhhYmJi');
+    this.onesignalClient = new OneSignal.Client('1597a7f2-13fb-4275-a459-ce25d01cd8f0', 'YzVjMGQ1NmMtYTFjNC00ZDQxLWE0N2YtM2Q1ZTU2MjFjMzQ5');
   }
 
   /**
@@ -124,7 +124,12 @@ export class CompanyService {
         where: { company: companyId },
         relations: ['user']
       });
-    const userDevicesId = userFollowing.map((data) => data.user.deviceId);
+    const userDevicesId = [];
+    userFollowing.forEach((data) => {
+      if (data.user.deviceId) {
+        userDevicesId.push(data.user.deviceId);
+      }
+    });
     if (userDevicesId.length) {
       const notification = {
         'headings': { en: 'New Job Listing' },
