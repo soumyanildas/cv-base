@@ -173,15 +173,18 @@ export class CompanyService {
    * who showed interest in the job listing
    */
   async viewJobListing(jobListingId: string): Promise<any> {
+    const jobListing = await this.jobListingRepository
+      .find({
+        where: { id: jobListingId },
+      });
     const userJobInterest = await this.userJobInterestRepository
       .find({
         where: { jobListing: jobListingId },
-        relations: ['user', 'jobListing']
+        relations: ['user']
       });
-    const job = userJobInterest[0].jobListing;
     const users = userJobInterest.map((data) => data.user);
     return {
-      job,
+      jobListing,
       users
     };
   }
