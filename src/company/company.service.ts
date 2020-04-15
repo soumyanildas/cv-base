@@ -78,11 +78,13 @@ export class CompanyService {
    * @description View the currently logged in user's company details
    */
   async viewCompany(companyId: string, userId: string): Promise<any> {
-    const userCompany = await this.userCompanyRepository
-      .findOne({
-        where: { company: companyId, user: userId },
-        relations: ['company']
-      });
+    const userCompany = await getRepository(UserCompany)
+      .createQueryBuilder('userCompany')
+      .leftJoinAndSelect('userCompany.company', 'company')
+      .leftJoinAndSelect('company.jobListings', 'jobListings')
+      .where('userCompany.company = :companyId', { companyId })
+      .andWhere('userCompany.user = :userId', { userId })
+      .getOne();
     if (!userCompany) {
       throw new HttpException('Company not found or user is not part of the company.', HttpStatus.NOT_FOUND);
     }

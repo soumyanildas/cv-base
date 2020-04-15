@@ -225,7 +225,7 @@ export class UserService {
    */
   async followedCompanies(userId: string): Promise<any> {
     return await this.userCompanyFollowRepository
-      .findOne({
+      .find({
         where: { user: userId },
         relations: ['company']
       });
