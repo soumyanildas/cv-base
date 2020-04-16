@@ -1,6 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not, getRepository } from 'typeorm';
+import { Repository, getRepository, getConnection } from 'typeorm';
 import { Strength } from '../user/entities/strength.entity';
 import { Skill } from '../user/entities/skill.entity';
 import { JobType } from '../user/entities/jobType.entity';
@@ -21,7 +21,6 @@ import { UserCompany } from '../common/entities/userCompany.entity';
 import * as bcrypt from 'bcrypt';
 import { MailService } from '../services/mail/mail.service';
 import { JwtService } from '@nestjs/jwt';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
 @Injectable()
 export class AdminService {
@@ -175,6 +174,12 @@ export class AdminService {
       user: employer,
       company
     };
+    await getConnection()
+    .createQueryBuilder()
+    .delete()
+    .from(UserCompany)
+    .where('user = :employerId', { employerId })
+    .execute()
     const entity = Object.assign(new UserCompany(), userCompany);
     await this.userCompanyRepository.save(entity)
   }
