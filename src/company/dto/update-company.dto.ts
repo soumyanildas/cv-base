@@ -10,12 +10,12 @@ export class UpdateCompanyDto {
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   readonly email: string;
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   readonly city: string;
 
   @ApiPropertyOptional()
