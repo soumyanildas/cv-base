@@ -203,7 +203,16 @@ export class UserService {
         where: { user: userId, company: companyId }
       });
     if (isUserFollowing) {
-      throw new HttpException('User already follows this company', HttpStatus.CONFLICT)
+      await getConnection()
+        .createQueryBuilder()
+        .delete()
+        .from(UserCompanyFollow)
+        .where('userId = :userId', { userId })
+        .andWhere('companyId = :companyId', { companyId })
+        .execute();
+      return {
+        message: 'Successfully unfollowed company'
+      };
     }
     const user = await this.userRepository
       .findOne({
