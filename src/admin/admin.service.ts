@@ -18,7 +18,7 @@ import { UpdateUserAdminDto } from './dto/update-user-admin.dto';
 import { UpdateCompanyAdminDto } from './dto/update-company-admin.dto';
 import { UserCompany } from '../common/entities/userCompany.entity';
 
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { MailService } from '../services/mail/mail.service';
 import { JwtService } from '@nestjs/jwt';
 
@@ -79,7 +79,7 @@ export class AdminService {
    * @description View all users in the database
    */
   async viewUsers(): Promise<any> {
-    return await this.userRepository.find();
+    return await this.userRepository.find({ relations: ['company'] });
   }
 
   /**
@@ -88,7 +88,7 @@ export class AdminService {
    * @description View details of a particular user
    */
   async viewUser(id: string): Promise<any> {
-    return await this.userRepository.findOne({ id })
+    return await this.userRepository.findOne({ where: { id }, relations: ['company'] })
   }
 
   /**
@@ -175,11 +175,11 @@ export class AdminService {
       company
     };
     await getConnection()
-    .createQueryBuilder()
-    .delete()
-    .from(UserCompany)
-    .where('user = :employerId', { employerId })
-    .execute()
+      .createQueryBuilder()
+      .delete()
+      .from(UserCompany)
+      .where('user = :employerId', { employerId })
+      .execute()
     const entity = Object.assign(new UserCompany(), userCompany);
     await this.userCompanyRepository.save(entity)
   }

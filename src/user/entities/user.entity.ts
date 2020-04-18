@@ -9,7 +9,7 @@ import { UserCompany } from '../../common/entities/userCompany.entity';
 import { UserCompanyFollow } from '../../common/entities/userCompanyFollow.entity';
 import { UserRecommendation } from '../../common/entities/userRecommendation.entity';
 
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { v4 as uuid4 } from 'uuid';
 
 export enum Gender {

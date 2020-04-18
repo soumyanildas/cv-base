@@ -8,7 +8,7 @@ import { User } from '../user/entities/user.entity';
 import { LoginDto } from '../user/dto/login.dto';
 
 import * as generator from 'generate-password';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import axios from 'axios';
 import { Admin } from 'src/admin/entities/admin.entity';
 import { FacebookDto } from 'src/user/dto/facebook.dto';
