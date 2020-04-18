@@ -90,7 +90,6 @@ export class UserService {
       .leftJoinAndSelect('recommendations.recommendedBy', 'recommendedBy')
       .leftJoinAndSelect('recommendations.company', 'company')
       .where('user.id = :id', { id })
-      .andWhere('recommendations.isRecommendationGiven = 1')
       .getOne();
   }
 
