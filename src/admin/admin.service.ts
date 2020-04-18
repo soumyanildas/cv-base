@@ -88,7 +88,17 @@ export class AdminService {
    * @description View details of a particular user
    */
   async viewUser(id: string): Promise<any> {
-    return await this.userRepository.findOne({ where: { id }, relations: ['company'] })
+    const user = await this.userRepository.findOne({ where: { id }, relations: ['company'] })
+    let updatedBy: any = user;
+    const admin = await this.adminRepository.findOne({ where: { id: user.updatedBy } });
+    if (admin) {
+      updatedBy = admin;
+    }
+    return {
+      ...user,
+      createdBy: user,
+      updatedBy
+    }
   }
 
   /**
@@ -104,7 +114,17 @@ export class AdminService {
    * @description View details of a particular company
    */
   async viewCompany(id: string): Promise<any> {
-    return await this.companyRepository.findOne({ id })
+    const company = await this.companyRepository.findOne({ where: { id }, relations: ['user'] })
+    let updatedBy: any = company.user;
+    const admin = await this.adminRepository.findOne({ where: { id: company.updatedBy } });
+    if (admin) {
+      updatedBy = admin;
+    }
+    return {
+      ...company,
+      createdBy: company.user,
+      updatedBy
+    }
   }
 
   /**
