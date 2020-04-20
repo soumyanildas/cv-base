@@ -20,15 +20,7 @@ import { config } from './common/config';
     CompanyModule,
     AdminModule,
     MailerModule.forRoot({
-      transport: {
-        host: config.host,
-        port: config.port,
-        secure: config.secure,
-        auth: {
-          user: config.username,
-          pass: config.password
-        }
-      },
+      transport: config.smtp,
     }),
     FileUploadModule,
     JwtModule.register({
