@@ -175,6 +175,7 @@ export class AuthService {
       const token = this.jwtService.sign(payload);
       return await this.mailService.sendForgotPassword(forgotPasswordDto.email, token);
     } catch (error) {
+      console.log('ma12forgotpasscheck', error);
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
