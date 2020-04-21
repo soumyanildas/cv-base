@@ -45,7 +45,8 @@ export class MailService {
         .then(() => {
           resolve("Successfully sent email");
         })
-        .catch(() => {
+        .catch((error) => {
+          console.log('MailService -> error', error);
           reject("Email sent failed");
         });
     });

@@ -35,6 +35,12 @@ export class Company {
   companyName: string;
 
   @Column({
+    type: 'numeric',
+    nullable: true
+  })
+  mobile: number;
+
+  @Column({
     type: 'text',
     nullable: true
   })

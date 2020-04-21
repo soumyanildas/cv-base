@@ -1,12 +1,17 @@
-import { IsNotEmpty, IsString, IsUrl, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsString, IsUrl, IsOptional, IsNumber } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateCompanyDto {
 
-  @ApiProperty()  
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   readonly companyName: string;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsOptional()
+  readonly mobile: number;
 
   @ApiProperty()
   @IsString()

@@ -88,7 +88,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: Gender,
-    default: Gender.male
+    nullable: true
   })
   gender: string;
 
