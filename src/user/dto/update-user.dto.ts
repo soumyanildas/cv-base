@@ -29,29 +29,29 @@ export class UpdateUserDto {
   @IsNotEmpty()
   readonly email: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsNumber()
   @IsOptional()
   readonly mobile: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsNumber()
   @Min(1901)
   @Max(2155)
   @IsOptional()
   readonly birthYear: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
   @IsOptional()
   readonly city: string;
 
-  @ApiProperty({ enum: ['male', 'female'] })
+  @ApiPropertyOptional({ enum: ['male', 'female'] })
   @IsEnum(Gender)
   @IsOptional()
   readonly gender: Gender;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
   @IsOptional()
   readonly jobStatus: string;

@@ -4,6 +4,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import * as bodyParser from 'body-parser';
+import { config } from './common/config';
 
 async function bootstrap() {
 
@@ -15,11 +17,14 @@ async function bootstrap() {
     validationError: { target: false, value: false }
   }));
 
+  app.use(bodyParser.json({limit: config.limit}));
+  app.use(bodyParser.urlencoded({limit: config.limit, extended: false}));
   app.enableCors();
 
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
   app.setViewEngine('hbs');
+  
 
   const options = new DocumentBuilder()
     .setTitle('MA12 CV')

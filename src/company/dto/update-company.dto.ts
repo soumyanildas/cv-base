@@ -8,17 +8,17 @@ export class UpdateCompanyDto {
   @IsNotEmpty()
   readonly companyName: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsNumber()
   @IsOptional()
   readonly mobile: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
   @IsOptional()
   readonly email: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
   @IsOptional()
   readonly city: string;

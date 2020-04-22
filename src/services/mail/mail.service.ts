@@ -19,9 +19,9 @@ export class MailService {
         .mailerService
         .sendMail({
           to: email,
-          from: 'noreply@soumyanildas.com', // sender address
-          subject: 'MA12 CV Base - Welcome', // Subject line
-          text: `Welcome to MA12 CV Base. Here is your password ${randomPassword}`, // plaintext body
+          from: config.from, // sender address
+          subject: config.welcomeSubject, // Subject line
+          text: `${config.welcomeMessage} ${randomPassword}`, // plaintext body
         })
         .then(() => {
           resolve("Successfully sent email");
@@ -38,9 +38,9 @@ export class MailService {
         .mailerService
         .sendMail({
           to: email,
-          from: 'noreply@soumyanildas.com', // sender address
-          subject: 'MA12 CV Base - Reset Password', // Subject line
-          text: `Please reset your password by following this link: ${this.SERVER_URL}reset-password?token=${token}`, // plaintext body
+          from: config.from, // sender address
+          subject: config.forgotPasswordSubject, // Subject line
+          text: `${config.forgotPasswordMessage} ${this.SERVER_URL}reset-password?token=${token}`, // plaintext body
         })
         .then(() => {
           resolve("Successfully sent email");

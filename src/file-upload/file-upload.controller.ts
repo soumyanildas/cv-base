@@ -1,44 +1,32 @@
-import { Controller, Post, UseInterceptors, UploadedFile, UseGuards, Res, HttpStatus, Get, Param } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express'
-import { ApiConsumes, ApiBody, ApiExcludeEndpoint, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { diskStorage } from 'multer'
-import { extname } from 'path'
+import { Controller, Post, UseGuards, Res, HttpStatus, Get, Param, Body } from '@nestjs/common';
+import { ApiExcludeEndpoint, ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { FileUploadDto } from './file-upload.dto';
+import { FileUploadDto } from './dto/file-upload.dto';
 import { config } from '../common/config';
+import { FileUploadService } from './file-upload.service';
 
-@Controller()
+@Controller('api/v1')
 export class FileUploadController {
 
   SERVER_URL: string;
 
-  constructor() {
+  constructor(
+    private readonly fileUploadService: FileUploadService
+  ) {
     this.SERVER_URL = config.baseURL;
   }
 
   @ApiTags('general')
-  @Post('api/v1/uploadFile')
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    description: 'Upload image or video here',
-    type: FileUploadDto,
+  @Post('uploadFile')
+  @ApiOperation({
+    description: 'Upload image or video here'
   })
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
-  @UseInterceptors(FileInterceptor('file', {
-    storage: diskStorage({
-      destination: './uploads'
-      , filename: (req, file, cb) => {
-        // Generating a 32 random chars long string
-        const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('')
-        //Calling the callback passing the random name generated with the original extension name
-        cb(null, `${randomName}${extname(file.originalname)}`)
-      }
-    })
-  }))
-  uploadFile(@UploadedFile() file, @Res() res: any) {
+  async uploadFile(@Body() fileUploadDto: FileUploadDto, @Res() res: any) {
+    const response = await this.fileUploadService.uploadFile(fileUploadDto);
     return res.status(HttpStatus.OK).json({
-      path: `${this.SERVER_URL}${file.path}`
+      path: `${this.SERVER_URL}${response}`
     });
   }
 
