@@ -43,4 +43,11 @@ export class CreateUserDto {
   @Type(() => CreateCompanyDto)
   readonly company: CreateCompanyDto;
 
+  @ApiProperty({
+    description: 'facebookId needed when loginType is \'facebook\''
+  })
+  @ValidateIf(user => user.loginType === 'facebook')
+  @IsNotEmpty()
+  readonly facebookId: string;
+
 }

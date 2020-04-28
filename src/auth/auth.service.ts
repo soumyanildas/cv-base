@@ -71,33 +71,33 @@ export class AuthService {
    * @param createUserDto DTO for encapsulating User
    */
   async facebookRegister(facebookDto: FacebookDto): Promise<any> {
-    try {
-      const facebookResponse = await axios.get(`https://graph.facebook.com/v2.10/me?fields=name,email&access_token=${facebookDto.access_token}`);
-      const { email } = facebookResponse.data;
-      const userResponse = await this.userRepository
-        .findOne({
-          where: { email },
-          relations: ['company']
-        });
-      // If user exists then generate jwt token and send a response back with the jwt token
-      if (userResponse) {
-        if (userResponse.userType === 'employer' && !userResponse.company.isActive) {
-          throw new HttpException('Account not activated yet. Please contact administrator.', HttpStatus.BAD_REQUEST);
-        }
-        const payload = { id: userResponse.id, email: userResponse.email, userType: userResponse.userType };
-        return {
-          accessToken: this.jwtService.sign(payload),
-          email: userResponse.email,
-          firstName: userResponse.firstName,
-          lastName: userResponse.lastName
-        };
-      } else {
-        return {
-          email
-        };
+    const facebookResponse = await axios.get(`https://graph.facebook.com/v6.0/me?fields=name,email&access_token=${facebookDto.access_token}`);
+    const { email, id } = facebookResponse.data;
+    console.log('AuthService -> id', id);
+    const userResponse = await this.userRepository
+      .findOne({
+        where: { facebookId: id },
+        relations: ['company']
+      });
+    console.log('AuthService -> userResponse', userResponse);
+    // If user exists then generate jwt token and send a response back with the jwt token
+    if (userResponse) {
+      if (userResponse.userType === 'employer' && (!userResponse.isActive || !userResponse.company.isActive)) {
+        console.log('===== 1');
+        throw new HttpException('Account not activated yet. Please contact administrator.', HttpStatus.BAD_REQUEST);
       }
-    } catch (error) {
-      throw new HttpException(error.response.data, error.response.status);
+      const payload = { id: userResponse.id, email: userResponse.email, userType: userResponse.userType };
+      return {
+        accessToken: this.jwtService.sign(payload),
+        email: userResponse.email,
+        firstName: userResponse.firstName,
+        lastName: userResponse.lastName
+      };
+    } else {
+      return {
+        email: null,
+        facebookId: id
+      };
     }
   }
 
@@ -115,7 +115,7 @@ export class AuthService {
       .getOne()
     if (userResponse) {
       if (userResponse.loginType === 'email') {
-        if (userResponse.userType === 'employer' && !userResponse.company.isActive && !userResponse.isActive) {
+        if (userResponse.userType === 'employer' && (!userResponse.company.isActive || !userResponse.isActive)) {
           throw new HttpException('Account not activated yet. Please contact administrator.', HttpStatus.BAD_REQUEST);
         }
         const isPasswordValid = await bcrypt.compare(loginDto.password, userResponse.password);

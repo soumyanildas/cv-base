@@ -130,6 +130,12 @@ export class User {
   loginType: string;
 
   @Column({
+    type: 'text',
+    nullable: true
+  })
+  facebookId: string;
+
+  @Column({
     type: 'boolean',
     nullable: true
   })

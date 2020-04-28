@@ -176,6 +176,7 @@ export class CompanyService {
     const jobListing = await this.jobListingRepository
       .find({
         where: { id: jobListingId },
+        relations: ['company']
       });
     const userJobInterest = await this.userJobInterestRepository
       .find({
@@ -222,8 +223,6 @@ export class CompanyService {
       .leftJoinAndSelect('recommendations.recommendedBy', 'recommendedBy')
       .leftJoinAndSelect('recommendations.company', 'company')
       .where('user.id = :candidateId', { candidateId })
-      .andWhere('user.userType = :userType', { userType: 'candidate' })
-      .andWhere('recommendations.isRecommendationGiven = 1')
       .getOne();
   }
 
